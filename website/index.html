@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>田园营造社 — 共识社区计划</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--soil:#2a1f14;--bark:#4a2f1e;--moss:#3d5230;--sage:#6b8059;--straw:#c9b08a;--cream:#f4ede0;--parchment:#ebe1ce;--mist:#ddd5c4;--stone:#8a7b68;--gold:#b8874a;--warm:#faf6ef}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--warm);color:var(--soil);font-weight:400;line-height:1.9;overflow-x:hidden;font-size:18px}
+
+/* NAV — 20% slimmer */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0.65rem 2rem;background:rgba(244,237,224,0.96);backdrop-filter:blur(16px);border-bottom:1.5px solid rgba(138,123,104,0.2)}
+.nl{font-family:'Noto Serif SC',serif;font-size:1.15rem;font-weight:700;color:var(--soil);letter-spacing:0.1em;text-decoration:none}
+.nls{display:flex;gap:1.6rem;list-style:none}
+.nls a{text-decoration:none;font-size:0.9rem;font-weight:500;color:var(--bark);transition:color 0.2s}
+.nls a:hover{color:var(--moss)}
+.ncta{padding:0.4rem 1.2rem;background:var(--moss)!important;color:var(--cream)!important;border-radius:1px}
+.ncta:hover{background:var(--soil)!important}
+.nctb{padding:0.35rem 1rem;border:1.5px solid var(--gold);color:var(--gold)!important;border-radius:1px;transition:all 0.2s}
+.nctb:hover{background:var(--gold);color:var(--soil)!important}
+.mob-btn{display:none;gap:0.5rem;align-items:center}
+.mob-btn a{display:inline-block;padding:0.4rem 0.9rem;text-decoration:none;font-size:0.85rem;font-weight:600;border-radius:1px}
+.mob-btn .mb-a{background:var(--moss);color:#fff}
+.mob-btn .mb-b{border:1.5px solid var(--gold);color:var(--gold)}
+
+/* HERO */
+.hero{position:relative;height:100vh;min-height:600px;display:flex;align-items:flex-end;overflow:hidden}
+.hbg{position:absolute;inset:0;background-size:cover;background-position:center 28%}
+.hov{position:absolute;inset:0;background:linear-gradient(to top,rgba(12,8,4,0.93) 0%,rgba(12,8,4,0.28) 52%,transparent 100%)}
+.hc{position:relative;z-index:2;padding:3rem 2rem 5rem;max-width:820px;animation:fU 0.9s ease both}
+.ht{font-family:'Noto Serif SC',serif;font-size:clamp(2.6rem,5vw,4.2rem);font-weight:700;line-height:1.18;color:#fff;margin-bottom:1.4rem;text-shadow:0 2px 28px rgba(0,0,0,0.55)}
+.ht em{font-style:normal;color:var(--straw)}
+.hs{font-size:1.08rem;color:rgba(255,255,255,0.82);max-width:580px;line-height:2.1;margin-bottom:2.2rem;font-weight:300}
+.ha{display:flex;gap:1rem;flex-wrap:wrap}
+.bp{display:inline-block;padding:1rem 2.5rem;background:var(--moss);color:#fff;font-size:1rem;font-weight:600;letter-spacing:0.05em;text-decoration:none;border:none;cursor:pointer;transition:background 0.25s,transform 0.15s}
+.bp:hover{background:var(--soil);transform:translateY(-2px)}
+.bs{display:inline-block;padding:1rem 2.3rem;background:rgba(184,135,74,0.12);color:#fff;font-size:1rem;font-weight:500;letter-spacing:0.05em;text-decoration:none;border:1.5px solid var(--gold);transition:all 0.25s}
+.bs:hover{background:var(--gold);color:var(--soil);transform:translateY(-2px)}
+.bg{display:inline-block;padding:1rem 2.5rem;background:transparent;color:#fff;font-size:1rem;font-weight:400;letter-spacing:0.05em;text-decoration:none;border:1.5px solid rgba(255,255,255,0.5);transition:all 0.25s}
+.bg:hover{border-color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.08)}
+.hst{position:absolute;right:2rem;bottom:3.5rem;z-index:2;display:flex;flex-direction:column;gap:1.4rem;align-items:flex-end}
+.snum{font-family:'Noto Serif SC',serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1;display:block;text-shadow:0 2px 16px rgba(0,0,0,0.4)}
+.slbl{font-size:0.8rem;color:var(--straw);letter-spacing:0.08em}
+
+/* SECTIONS */
+.sw{padding:5.5rem 5rem}
+.sl{font-size:0.78rem;letter-spacing:0.22em;color:var(--stone);text-transform:uppercase;margin-bottom:0.9rem;font-weight:500}
+.st{font-family:'Noto Serif SC',serif;font-size:clamp(1.9rem,3vw,2.7rem);font-weight:700;color:var(--soil);line-height:1.3}
+.dv{width:36px;height:3px;background:var(--gold);margin:1.6rem 0;border-radius:2px}
+
+/* ABOUT */
+.about{background:var(--soil);color:var(--cream);position:relative;overflow:hidden}
+.about .sl{color:var(--straw);opacity:0.75}
+.about .st{color:#fff}
+.about .dv{background:var(--gold)}
+.abt{position:absolute;right:-1rem;top:50%;transform:translateY(-50%);font-family:'Noto Serif SC',serif;font-size:clamp(7rem,18vw,16rem);font-weight:700;color:rgba(255,255,255,0.025);line-height:1;pointer-events:none;white-space:nowrap}
+.ai{font-size:1.05rem;color:rgba(244,237,224,0.82);line-height:2.2;margin-bottom:2.5rem;max-width:720px;font-weight:300}
+.aq{border-left:3px solid var(--gold);padding:1.4rem 1.8rem;margin:2.5rem 0;background:rgba(255,255,255,0.04);font-family:'Noto Serif SC',serif;font-size:1.2rem;color:var(--straw);line-height:1.85;font-style:italic}
+
+/* PILLARS — clickable */
+.pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:3rem;background:rgba(255,255,255,0.06)}
+.pillar{background:rgba(42,31,20,0.8);padding:2rem 1.6rem;transition:background 0.25s;cursor:pointer;position:relative}
+.pillar:hover{background:rgba(90,60,35,0.95)}
+.pico{font-size:1.6rem;margin-bottom:0.8rem}
+.ptit{font-family:'Noto Serif SC',serif;font-size:1.1rem;font-weight:700;color:var(--straw);margin-bottom:0.6rem}
+.pdsc{font-size:0.92rem;color:rgba(244,237,224,0.65);line-height:1.95}
+.pillar-hint{display:inline-block;margin-top:1rem;font-size:0.78rem;color:var(--gold);letter-spacing:0.08em;border-bottom:1px solid rgba(184,135,74,0.4);padding-bottom:1px}
+
+/* GALLERY */
+.gal{display:flex;gap:3px;height:310px;overflow:hidden;background:var(--soil)}
+.gal img{flex:1;object-fit:cover;object-position:center;filter:brightness(0.87) saturate(1.1);transition:flex 0.5s ease,filter 0.3s;cursor:pointer}
+.gal img:hover{flex:3;filter:brightness(1) saturate(1.2)}
+
+/* CONNECTION */
+.conn{background:var(--parchment)}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;margin-top:3rem;align-items:center}
+.cimg{overflow:hidden;aspect-ratio:4/3}
+.cimg img{width:100%;height:100%;object-fit:cover}
+.cq{font-family:'Noto Serif SC',serif;font-size:1.45rem;font-weight:700;color:var(--moss);line-height:1.55;margin-bottom:1.4rem}
+.cb{font-size:1rem;color:var(--bark);line-height:2.15}
+.tags{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:2rem}
+.tag{padding:0.5rem 1rem;background:var(--cream);border:1.5px solid var(--sage);color:var(--moss);font-size:0.9rem;font-weight:500}
+
+/* SEASONS */
+.seas{background:var(--warm)}
+.si{font-size:1rem;color:var(--stone);line-height:2.1;max-width:660px;margin-top:1.4rem}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:2.5rem;background:var(--mist)}
+.sc{position:relative;overflow:hidden;aspect-ratio:16/10;cursor:pointer}
+.sc img{width:100%;height:100%;object-fit:cover;transition:transform 0.5s,filter 0.3s;filter:brightness(0.78) saturate(1.1)}
+.sc:hover img{transform:scale(1.05);filter:brightness(0.88) saturate(1.15)}
+.so{position:absolute;inset:0;background:linear-gradient(to top,rgba(12,8,4,0.82) 0%,transparent 60%);display:flex;flex-direction:column;justify-content:flex-end;padding:1.6rem}
+.sn2{font-family:'Noto Serif SC',serif;font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:0.4rem}
+.sd{font-size:0.9rem;color:rgba(255,255,255,0.82);line-height:1.8;margin-bottom:0.6rem}
+.sc-hint{font-size:0.75rem;color:var(--straw);letter-spacing:0.08em;opacity:0.9}
+
+/* PRINCIPLES */
+.prin{background:var(--soil);color:var(--cream)}
+.prin .sl{color:var(--straw);opacity:0.75}
+.prin .st{color:#fff}
+.prin .dv{background:var(--gold)}
+.pintro{font-size:1rem;color:rgba(244,237,224,0.7);line-height:2.1;margin-bottom:3rem;max-width:600px}
+.pl{display:flex;flex-direction:column}
+.pi{display:grid;grid-template-columns:5rem 1fr;border-bottom:1px solid rgba(255,255,255,0.08);padding:2rem 0;gap:1.5rem;align-items:start}
+.pn{font-family:'Noto Serif SC',serif;font-size:2.2rem;font-weight:700;color:rgba(255,255,255,0.1);line-height:1}
+.ptit2{font-family:'Noto Serif SC',serif;font-size:1.12rem;font-weight:700;color:var(--straw);margin-bottom:0.6rem}
+.pdesc{font-size:0.93rem;color:rgba(244,237,224,0.65);line-height:2.1}
+
+/* ARTICLES */
+.arts{background:var(--parchment)}
+.asub{font-size:1rem;color:var(--stone);line-height:1.9;margin:1rem 0 2.5rem}
+.ag{display:grid;grid-template-columns:1fr;gap:2px;background:var(--mist)}
+.ar{display:grid;grid-template-columns:56px 1fr;background:var(--parchment);text-decoration:none;transition:background 0.2s}
+.ar:hover{background:var(--cream)}
+.anum{width:56px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:1.5rem;font-weight:700;color:var(--mist);border-right:2px solid var(--mist);min-height:88px}
+.acon{padding:1.3rem 1.5rem}
+.atag{font-size:0.73rem;letter-spacing:0.15em;color:var(--sage);text-transform:uppercase;font-weight:500;margin-bottom:0.35rem}
+.atit{font-family:'Noto Serif SC',serif;font-size:1.05rem;font-weight:700;color:var(--soil);line-height:1.5}
+.aex{font-size:0.9rem;color:var(--stone);line-height:1.85;margin-top:0.35rem}
+.acta{margin-top:2rem;text-align:center}
+.bol{display:inline-block;padding:0.9rem 2.2rem;border:2px solid var(--moss);color:var(--moss);font-size:0.97rem;font-weight:500;text-decoration:none;transition:all 0.25s}
+.bol:hover{background:var(--moss);color:#fff}
+
+/* FAQ */
+.faq{background:var(--warm)}
+.flist{margin-top:3rem}
+.fi{border-bottom:2px solid var(--mist)}
+.fq{width:100%;text-align:left;padding:1.5rem 0;background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem;font-family:'Noto Sans SC',sans-serif;font-size:1.05rem;font-weight:500;color:var(--soil);transition:color 0.2s;line-height:1.5}
+.fq:hover{color:var(--moss)}
+.fic{flex-shrink:0;width:28px;height:28px;border:2px solid var(--stone);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--stone);font-size:1.1rem;transition:transform 0.3s,background 0.2s,border-color 0.2s}
+.fi.open .fic{transform:rotate(45deg);background:var(--moss);border-color:var(--moss);color:#fff}
+.fa{max-height:0;overflow:hidden;transition:max-height 0.38s ease}
+.fi.open .fa{max-height:600px}
+.fai{padding-bottom:1.8rem;font-size:1rem;color:var(--bark);line-height:2.15;border-left:3px solid var(--sage);padding-left:1.4rem}
+
+/* ASSESS — 测评入口板块 */
+.assess{background:var(--parchment);position:relative;overflow:hidden}
+.assess-deco{position:absolute;left:-1rem;top:50%;transform:translateY(-50%);font-family:'Noto Serif SC',serif;font-size:clamp(7rem,17vw,15rem);font-weight:700;color:rgba(61,82,48,0.05);line-height:1;pointer-events:none;white-space:nowrap}
+.assess-content{position:relative;z-index:2}
+.assess-desc{font-size:1.05rem;color:var(--bark);line-height:2.15;margin-bottom:1rem;max-width:680px;font-weight:300}
+.assess-features{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin:2.8rem 0;background:var(--mist)}
+.af{background:var(--cream);padding:2rem 1.7rem;transition:background 0.25s}
+.af:hover{background:#fff}
+.afn{font-family:'Noto Serif SC',serif;font-size:2rem;font-weight:700;color:var(--moss);line-height:1;margin-bottom:0.7rem;letter-spacing:-0.01em}
+.aft{font-family:'Noto Serif SC',serif;font-size:1.05rem;font-weight:700;color:var(--soil);margin-bottom:0.7rem;letter-spacing:0.02em}
+.afd{font-size:0.92rem;color:var(--stone);line-height:1.95}
+.assess-cta-row{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-top:0.5rem}
+.assess-btn{display:inline-block;padding:1.05rem 2.6rem;background:var(--moss);color:var(--cream);font-family:'Noto Sans SC',sans-serif;font-size:1.02rem;font-weight:600;letter-spacing:0.06em;text-decoration:none;transition:background 0.25s,transform 0.15s}
+.assess-btn:hover{background:var(--soil);transform:translateY(-2px)}
+.assess-note{font-size:0.85rem;color:var(--stone);line-height:1.8;letter-spacing:0.02em}
+
+.su{background:var(--bark);position:relative;overflow:hidden}
+.subg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0.22}
+.suov{position:absolute;inset:0;background:rgba(60,36,18,0.88)}
+.suco{position:relative;z-index:2}
+.su .sl{color:var(--straw);opacity:0.8}
+.su .st{color:#fff}
+.su .dv{background:var(--gold)}
+.sudesc{font-size:1rem;color:rgba(244,237,224,0.78);line-height:2.15;margin-bottom:2.5rem;max-width:620px}
+.conds{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:2.5rem}
+.cond{display:flex;align-items:flex-start;gap:0.7rem;font-size:0.93rem;color:rgba(244,237,224,0.75);line-height:1.8}
+.cdot{width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:0.62rem;flex-shrink:0}
+.form-btn{display:inline-block;padding:1.1rem 3rem;background:var(--gold);color:var(--soil);font-family:'Noto Sans SC',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.08em;text-decoration:none;margin-bottom:2.5rem;transition:background 0.25s,transform 0.15s}
+.form-btn:hover{background:var(--straw);transform:translateY(-2px)}
+.qr-row{display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-top:0.5rem}
+.qr-box{background:rgba(244,237,224,0.08);border:1px solid rgba(244,237,224,0.2);padding:1.2rem;display:flex;flex-direction:column;align-items:center;gap:0.8rem;flex-shrink:0}
+.qr-box img{width:140px;height:140px;object-fit:contain}
+.qr-lbl{font-size:0.82rem;color:rgba(244,237,224,0.6);text-align:center;letter-spacing:0.04em;line-height:1.6}
+.qr-txt{font-size:0.97rem;color:rgba(244,237,224,0.75);line-height:2.1}
+.qr-txt strong{color:var(--straw);font-weight:600}
+
+/* FOOTER */
+footer{background:var(--soil);padding:3rem 2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.flo{font-family:'Noto Serif SC',serif;font-size:1.1rem;font-weight:700;color:var(--straw)}
+.fme{font-size:0.82rem;color:rgba(138,123,104,0.6);margin-top:0.3rem}
+.fqr{display:flex;align-items:center;gap:1rem}
+.fqr img{width:70px;height:70px;object-fit:contain;opacity:0.75;border:1px solid rgba(200,180,150,0.2);padding:4px;background:rgba(255,255,255,0.05)}
+.fqr-t{font-size:0.8rem;color:rgba(138,123,104,0.55);line-height:1.7}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;z-index:500;background:rgba(20,14,8,0.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:1.5rem}
+.modal.open{display:flex}
+.modal-box{background:var(--warm);max-width:780px;width:100%;max-height:90vh;border-radius:2px;position:relative;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.35)}
+.modal-close{position:absolute;top:1rem;right:1rem;width:36px;height:36px;background:var(--mist);border:none;cursor:pointer;font-size:1rem;color:var(--soil);border-radius:50%;z-index:2;transition:background 0.2s;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--straw)}
+.modal-scroll{overflow-y:auto;padding:3rem 3rem 2.5rem;flex:1}
+.ap-h1{font-family:'Noto Serif SC',serif;font-size:clamp(1.5rem,4vw,2rem);font-weight:700;color:var(--soil);line-height:1.35;margin-bottom:0.5rem}
+.ap-divider{width:36px;height:3px;background:var(--gold);margin:1.2rem 0 2rem;border-radius:2px}
+.ap-h2{font-family:'Noto Serif SC',serif;font-size:1.15rem;font-weight:700;color:var(--bark);margin:2.2rem 0 0.8rem;padding-left:0.8rem;border-left:3px solid var(--sage)}
+.ap-p{font-size:1rem;color:var(--bark);line-height:2.1;margin-bottom:1.1rem}
+.ap-refs{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--mist)}
+.ap-refs-title{font-family:'Noto Serif SC',serif;font-size:1rem;font-weight:700;color:var(--stone);margin-bottom:1.2rem;letter-spacing:0.05em}
+.ap-ref{margin-bottom:1.4rem}
+.ap-ref-link{font-size:0.9rem;color:var(--moss);font-weight:500;text-decoration:none;border-bottom:1px solid rgba(61,82,48,0.3);padding-bottom:1px;word-break:break-all;transition:color 0.2s}
+.ap-ref-link:hover{color:var(--soil)}
+.ap-ref-desc{font-size:0.85rem;color:var(--stone);line-height:1.8;margin-top:0.3rem}
+
+/* SEASON MODAL IMAGES */
+.sm-lead{margin-bottom:2rem}
+.sm-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:1.5rem}
+.sm-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--mist);display:block}
+.sm-img-wide{grid-column:1/-1;aspect-ratio:16/7}
+
+/* ANIMATION */
+@keyframes fU{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+.rev{opacity:0;transform:translateY(22px);transition:opacity 0.7s ease,transform 0.7s ease}
+.rev.vis{opacity:1;transform:translateY(0)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sw{padding:4rem 2.5rem}
+  .pillars{grid-template-columns:1fr 1fr}
+  .cg{grid-template-columns:1fr}
+  .cimg{display:none}
+  .sg{grid-template-columns:1fr 1fr}
+  .assess-features{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  body{font-size:17px}
+  nav{padding:0.55rem 1.2rem}
+  .nls{display:none}
+  .mob-btn{display:flex}
+  .sw{padding:3.5rem 1.4rem}
+  .st{font-size:clamp(1.6rem,6.5vw,2rem)}
+  .ht{font-size:clamp(2.1rem,9vw,3rem)}
+  .pillars{grid-template-columns:1fr 1fr}
+  .gal{height:175px}
+  .sg{grid-template-columns:1fr}
+  .pi{grid-template-columns:2.8rem 1fr}
+  .pn{font-size:1.8rem}
+  .hst{right:1rem;bottom:2.5rem}
+  .snum{font-size:1.9rem}
+  .conds{grid-template-columns:1fr}
+  .modal-scroll{padding:2rem 1.5rem}
+  .sm-grid{grid-template-columns:1fr}
+  .assess-features{grid-template-columns:1fr}
+  .assess-cta-row{flex-direction:column;align-items:flex-start;gap:1rem}
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a href="#" class="nl">田园营造社</a>
+  <ul class="nls">
+    <li><a href="#about">理念</a></li>
+    <li><a href="#nature">山水</a></li>
+    <li><a href="#conn">联结</a></li>
+    <li><a href="#prin">公约</a></li>
+    <li><a href="#arts">文章</a></li>
+    <li><a href="#faq">问答</a></li>
+    <li><a href="#assess" class="nctb">测匹配度</a></li>
+    <li><a href="#su" class="ncta">申请加入</a></li>
+  </ul>
+  <div class="mob-btn">
+    <a href="#assess" class="mb-b">测匹配度</a>
+    <a href="#su" class="mb-a">申请加入</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hbg" style="background-image:url('imgs/hero.jpg')"></div>
+  <div class="hov"></div>
+  <div class="hc">
+    <h1 class="ht">山河为邻<br>与<em>同道者</em><br>共建田园</h1>
+    <p class="hs">在AI浪潮重塑世界的时代，一群理性、独立、向往自然的人，正在西南山水间，以共识与契约为基础，构建一种有韧性、有温度的新生活。</p>
+    <div class="ha">
+      <a href="#su" class="bp">申请加入社区</a>
+      <a href="#assess" class="bs">测匹配度</a>
+      <a href="#about" class="bg">了解我们的理念</a>
+    </div>
+  </div>
+  <div class="hst">
+    <div><span class="snum">50</span><span class="slbl">启动人数</span></div>
+    <div><span class="snum">100</span><span class="slbl">规模上限</span></div>
+    <div><span class="snum">3-5年</span><span class="slbl">逐步推进</span></div>
+  </div>
+</section>
+
+<section class="about sw rev" id="about">
+  <div class="abt">共识</div>
+  <p class="sl">理念与愿景</p>
+  <h2 class="st">这不是逃离<br>而是主动选择</h2>
+  <div class="dv"></div>
+  <p class="ai">未来十年，AI重塑劳动市场、人口老龄化冲击公共服务、城市原子化加剧孤独。那些曾经依附于国家、单位、家族的安全感正在松动。但真正稳固的，始终是人与人之间的真实连接，以及个体对自己生活的掌控力。</p>
+  <blockquote class="aq">"我们不招募追随者，也不许诺乌托邦。只是邀请一些理性、独立、真诚向往自然的人，在同一片山水间，按自己的步调生活，彼此相望。"</blockquote>
+  <div class="pillars rev">
+    <div class="pillar" onclick="openModal('modal-health')">
+      <div class="pico">🌿</div><div class="ptit">环境与健康</div>
+      <p class="pdsc">远离城市毒素，回归清洁的空气、土地与食物。延长健康寿命，重建身体与自然的本能联系。</p>
+      <span class="pillar-hint">阅读全文 →</span>
+    </div>
+    <div class="pillar" onclick="openModal('modal-governance')">
+      <div class="pico">⚖️</div><div class="ptit">去中心化治理</div>
+      <p class="pdsc">以共识取代权力。共识决策六步法与阻拦权机制，保障每位成员的实质自由与平等发声。</p>
+      <span class="pillar-hint">阅读全文 →</span>
+    </div>
+    <div class="pillar" onclick="openModal('modal-connection')">
+      <div class="pico">🤝</div><div class="ptit">真实的人际连接</div>
+      <p class="pdsc">在真实空间面对面生活，重建现代人渴望但稀缺的——有深度、有温度的邻里关系与互助网络。</p>
+      <span class="pillar-hint">阅读全文 →</span>
+    </div>
+    <div class="pillar" onclick="openModal('modal-independence')">
+      <div class="pico">🛡️</div><div class="ptit">个体经济独立</div>
+      <p class="pdsc">社区不经手资金，不设福利体系。每位成员完全自主负责自己的生活成本与经济安全。</p>
+      <span class="pillar-hint">阅读全文 →</span>
+    </div>
+  </div>
+</section>
+
+<div class="gal rev">
+  <img src="imgs/gallery-01.jpg" alt="">
+  <img src="imgs/card-01.jpg" alt="">
+  <img src="imgs/card-02.jpg" alt="">
+  <img src="imgs/card-03.jpg" alt="">
+  <img src="imgs/card-04.jpg" alt="">
+</div>
+
+<section class="conn sw" id="conn">
+  <p class="sl">有意义的连接</p>
+  <h2 class="st">孤独，不是宿命</h2>
+  <div class="dv"></div>
+  <div class="cg rev">
+    <div class="cimg"><img src="imgs/gallery-02.jpg" alt="田园村落"></div>
+    <div>
+      <p class="cq">"我们在屏幕上有无数联系，却在现实中日渐孤立。"</p>
+      <p class="cb">研究显示，现代都市人平均每天与手机互动超过2600次，真正面对面的深度交流却越来越稀缺。孤独感正在成为这一代中年人最隐秘的痛点。<br><br>田园营造社不提供"解决方案"——我们提供的是一个物理空间与人文环境：当50至100位有着相似气质、共同认知的人生活在同一片山水中，深度联结会自然发生，不是被组织的，而是自然生长出来的。</p>
+      <div class="tags">
+        <span class="tag">面对面的真实相遇</span>
+        <span class="tag">邻里互助网络</span>
+        <span class="tag">共同劳作与分享</span>
+        <span class="tag">无功利的深度友谊</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="seas sw" id="nature">
+  <p class="sl">四季山水</p>
+  <h2 class="st">一片适宜全年常住的山水</h2>
+  <div class="dv"></div>
+  <p class="si">选址在中国西南地区，这里空气清新，海拔适中（800—1500米），气候温润，四季分明，无极端寒暑，年均温16—20℃。光照充足，适合户外活动，有利于多种蔬菜、果树的自然种植，是全球少有的宜居地带。</p>
+  <div class="sg rev">
+    <div class="sc" onclick="openModal('modal-spring')">
+      <img src="imgs/scene-01.jpg" alt="冬春花海">
+      <div class="so">
+        <div class="sn2">冬春 · 百花盛开</div>
+        <div class="sd">低海拔区域冬季仍然温暖如春，满山花海，高山上却是一派北国风光，充分展现出当地巨大的垂直落差带来的丰富自然景观。</div>
+        <span class="sc-hint">点击了解更多 →</span>
+      </div>
+    </div>
+    <div class="sc" onclick="openModal('modal-cloud')">
+      <img src="imgs/scene-02.jpg" alt="云海">
+      <div class="so">
+        <div class="sn2">晨&夕 · 云海涌动</div>
+        <div class="sd">山谷间云海汹涌，村寨时隐时现，宛若仙境。</div>
+        <span class="sc-hint">点击了解更多 →</span>
+      </div>
+    </div>
+    <div class="sc" onclick="openModal('modal-lake')">
+      <img src="imgs/scene-03.jpg" alt="湖泊">
+      <div class="so">
+        <div class="sn2">各处 · 湖光山色</div>
+        <div class="sd">绿水环抱青山，湖泊清碧如玉，自然馈赠了最朴素的丰盛与宁静。</div>
+        <span class="sc-hint">点击了解更多 →</span>
+      </div>
+    </div>
+    <div class="sc" onclick="openModal('modal-forest')">
+      <img src="imgs/scene-04.jpg" alt="森林">
+      <div class="so">
+        <div class="sn2">夏秋 · 森呼吸</div>
+        <div class="sd">原始森林中徒步，空气中富含负氧离子，是最自然的身心疗愈。</div>
+        <span class="sc-hint">点击了解更多 →</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="prin sw rev" id="prin">
+  <p class="sl">田园共创公约</p>
+  <h2 class="st">以共识代替权力的垄断<br>以契约对抗人性的弱点</h2>
+  <div class="dv"></div>
+  <p class="pintro">社区治理的底层逻辑不是领袖与服从，而是所有成员共同认同的规则。以下是六条核心原则，完整版《田园共创公约 v1.1》可前往公众号阅读。</p>
+  <div class="pl">
+    <div class="pi rev"><div class="pn">01</div><div><div class="ptit2">独立个体是一切的前提</div><p class="pdesc">我们的门槛是"具备在偏远山村独立生活能力的人"。只有每个个体都是自立的，由他们组成的系统才是稳固的。加入社区不是寻找依靠，而是选择相望。</p></div></div>
+    <div class="pi rev"><div class="pn">02</div><div><div class="ptit2">共识决策，阻拦权保障少数</div><p class="pdesc">决策须追求所有成员"可接受"，而非多数人"喜欢"。任何成员可对损害核心利益的提案行使阻拦权，提案须修改至阻拦方撤回为止。</p></div></div>
+    <div class="pi rev"><div class="pn">03</div><div><div class="ptit2">契约精神对抗人性的弱点</div><p class="pdesc">将组织架构、决策流程、退出机制全部以公约形式明确。对规则的信任高于对个人的信任，用理性制度保障长期稳定。</p></div></div>
+    <div class="pi rev"><div class="pn">04</div><div><div class="ptit2">非营利，不经手成员资金</div><p class="pdesc">社区为非营利性质，不设统一经济体。房屋由个人与房主直接交易，确保每位成员的经济独立性不受侵蚀。</p></div></div>
+    <div class="pi rev"><div class="pn">05</div><div><div class="ptit2">在实践中逐步完善，慢慢找到同道</div><p class="pdesc">漫长的时间门槛是刻意设计的筛选机制，自然淘汰冲动者，留下有远见与耐心的同道中人。筹备期用于充分认识彼此、磨合理念、模拟治理、实地考察和实践。</p></div></div>
+    <div class="pi rev"><div class="pn">06</div><div><div class="ptit2">加入与退出始终自由</div><p class="pdesc">没有强制绑定，没有惩罚机制。正因为离开是自由的，留下的选择才更有意义。</p></div></div>
+  </div>
+</section>
+
+<section class="arts sw" id="arts">
+  <p class="sl">文章与文档</p>
+  <h2 class="st">理念的来处</h2>
+  <div class="dv"></div>
+  <p class="asub">以下文章发表于微信公众号「田园营造社」，完整记录了这个计划从构想到落地的思考过程。</p>
+  <div class="ag rev">
+    <a href="https://mp.weixin.qq.com" target="_blank" class="ar"><div class="anum">01</div><div class="acon"><div class="atag">核心理念</div><div class="atit">田园共识社区：结构性危机下的自我保护与群体探索</div><div class="aex">去中心化、个体独立与高共识互助，是应对AI浪潮、老龄化与孤独化的生存策略</div></div></a>
+    <a href="https://mp.weixin.qq.com" target="_blank" class="ar"><div class="anum">02</div><div class="acon"><div class="atag">社区计划</div><div class="atit">田园共创社区计划 v1.0</div><div class="aex">愿景、选址条件、组织招募与准入退出机制的完整阐述</div></div></a>
+    <a href="https://mp.weixin.qq.com" target="_blank" class="ar"><div class="anum">03</div><div class="acon"><div class="atag">治理文件</div><div class="atit">田园共创公约 v1.1</div><div class="aex">共识决策六步法与阻拦权机制的完整设计，社区治理的根本规则</div></div></a>
+    <a href="https://mp.weixin.qq.com" target="_blank" class="ar"><div class="anum">04</div><div class="acon"><div class="atag">健康生活</div><div class="atit">告别都市病：在山水间重建身体的防御系统</div><div class="aex">从环境、饮食、运动、社交四维度阐述田园生活对健康寿命的深远影响</div></div></a>
+    <a href="https://mp.weixin.qq.com" target="_blank" class="ar"><div class="anum">05</div><div class="acon"><div class="atag">路径思考</div><div class="atit">田园社区建设探索：从中心化到独立个体共识的路径</div><div class="aex">现有田园社区模式的反思，以及去中心化建构路径的探索</div></div></a>
+    <a href="https://mp.weixin.qq.com" target="_blank" class="ar"><div class="anum">06</div><div class="acon"><div class="atag">时代背景</div><div class="atit">在技术奇点爆发的前夜，找回真实的碳基联结</div><div class="aex">AI海啸来临，我们如何在现实世界重建有温度、有深度的人际连接</div></div></a>
+  </div>
+  <div class="acta"><a href="https://mp.weixin.qq.com" target="_blank" class="bol">前往公众号阅读全文</a></div>
+</section>
+
+<section class="faq sw" id="faq">
+  <p class="sl">常见问题</p>
+  <h2 class="st">你可能想问的</h2>
+  <div class="dv"></div>
+  <div class="flist rev">
+    <div class="fi"><button class="fq" onclick="tF(this)">我年近五十，是否适合加入这个社区？<span class="fic">+</span></button><div class="fa"><div class="fai">这个社区的主要目标受众恰好就是40至50岁这一代人——有足够的阅历与判断力，对生活有清晰的主见，同时也在经历人生中途的种种思考与重估。没有年龄上限，但需要身体健康、可从事中等强度体力劳动。无论你是在考虑提前退休、转向远程工作，还是对现有生活方式感到疲倦，都欢迎加入。</div></div></div>
+    <div class="fi"><button class="fq" onclick="tF(this)">"真实联结"，具体是什么样子的？<span class="fic">+</span></button><div class="fa"><div class="fai">不是被组织的团建，也不是强制的集体劳作。而是：邻居和你一起在院子里种菜，偶尔聊聊各自最近读的书；某个晴天下午几个人自发聚在一起喝茶；当你生病或有事，有人自然地来帮忙。这种联结来自共同生活的日常，不需要被设计，只需要足够多的同频的人住在同一片山水里。</div></div></div>
+    <div class="fi"><button class="fq" onclick="tF(this)">我性格内向，不擅长社交，也适合吗？<span class="fic">+</span></button><div class="fa"><div class="fai">非常适合。内向的人往往更渴望有深度、有质量的人际关系，而不是频繁的浅层社交。这个社区的设计正是如此——每家独立院落，充分尊重个人边界与隐私。没有人会强迫你参与任何活动。你可以选择一个人静处，也可以在状态好的时候走进邻里。</div></div></div>
+    <div class="fi"><button class="fq" onclick="tF(this)">经济上需要达到什么条件才能参与？<span class="fic">+</span></button><div class="fa"><div class="fai">核心要求：在较长时间内，不依靠农业种植，可以维持基本生活支出。西南山地的生活成本远低于大城市，租赁一个独立院落通常在千元左右/月。如果你有远程工作收入、自由职业收入、退休金或积蓄，通常都可以满足条件。社区不经手任何成员资金，也不收取任何费用。</div></div></div>
+    <div class="fi"><button class="fq" onclick="tF(this)">筹备期里，我们会做什么？<span class="fic">+</span></button><div class="fa"><div class="fai">筹备期是社区建设最重要的阶段：持续的网络社群交流；组织小规模线下见面与实地考察；集体参与公约的讨论与修订；模拟治理流程，提前发现潜在冲突；以及各自为入住做好经济与生活能力的准备。漫长的筹备期本身就是筛选机制——真正认同这个理念的人，不会因为"太慢"而离开。</div></div></div>
+    <div class="fi"><button class="fq" onclick="tF(this)">如果加入后发现不适合，可以退出吗？<span class="fic">+</span></button><div class="fa"><div class="fai">随时可以。加入和退出始终完全自由，没有任何经济绑定或惩罚机制。在筹备期，你甚至不需要做出任何承诺——只是表达意向，保持联系，共同探索。正因为离开是自由的，留下的选择才更有重量。</div></div></div>
+    <div class="fi"><button class="fq" onclick="tF(this)">选址在哪里？什么时候最终确定？<span class="fic">+</span></button><div class="fa"><div class="fai">首批社区候选地区偏向中国西南，具体选址尚在考察中，尚未最终确定。选址标准：有山有水、视野开阔、气候温润、海拔适中，距离百万人口城市不超过200公里，5平方公里内有50户以上的自然村落，具备基本医疗与生活配套。最终选址将由全体意向成员共同参与决策。</div></div></div>
+  </div>
+</section>
+
+<section class="assess sw rev" id="assess">
+  <div class="assess-deco">同路</div>
+  <div class="assess-content">
+    <p class="sl">不确定是否合适？</p>
+    <h2 class="st">先测一测<br>你与这个社区是否同路</h2>
+    <div class="dv"></div>
+    <p class="assess-desc">这是一份关于自我认知、价值理念与外部环境的结构化测评，约5分钟完成。结束后会生成属于你的匹配度报告，并可以与AI顾问「山问」就报告内容深入对话——不为说服你加入，只为帮你更清晰地看见自己真正想要的生活。</p>
+    <div class="assess-features rev">
+      <div class="af">
+        <div class="afn">15</div>
+        <div class="aft">题深度自评</div>
+        <div class="afd">覆盖独立性、决策风格、价值理念、家庭顾虑等核心维度</div>
+      </div>
+      <div class="af">
+        <div class="afn">~5min</div>
+        <div class="aft">完成时长</div>
+        <div class="afd">无需注册，匿名进行，结果只属于你自己</div>
+      </div>
+      <div class="af">
+        <div class="afn">AI</div>
+        <div class="aft">顾问对话</div>
+        <div class="afd">将报告交给「山问」，开启关于自己生活的深度对话</div>
+      </div>
+    </div>
+    <div class="assess-cta-row">
+      <a href="./assessment.html" target="_blank" class="assess-btn">开始测评 →</a>
+      <p class="assess-note">完全自愿，不留存任何个人数据。<br>若中途希望直接报名，可随时返回页面顶部。</p>
+    </div>
+  </div>
+</section>
+
+<section class="su sw" id="su">
+  <div class="subg" style="background-image:url('imgs/bg-decor.jpg')"></div>
+  <div class="suov"></div>
+  <div class="suco">
+    <p class="sl">报名加入</p>
+    <h2 class="st">成为意向社员</h2>
+    <div class="dv"></div>
+    <p class="sudesc">这是一个邀请，不是一份合同。提交意向报名，意味着你愿意开始了解、对话与共同探索。没有承诺，没有捆绑。加入与退出，始终自由。</p>
+    <div class="conds">
+      <div class="cond"><div class="cdot"></div><span>认同去中心化、契约精神、个体独立的理念</span></div>
+      <div class="cond"><div class="cdot"></div><span>身体健康，可从事中等强度的体力劳动</span></div>
+      <div class="cond"><div class="cdot"></div><span>可在初期3-5年不依靠农耕维持基本生活支出</span></div>
+      <div class="cond"><div class="cdot"></div><span>能接受较长筹备期与慢节奏逐步推进</span></div>
+      <div class="cond"><div class="cdot"></div><span>愿意在真实空间中建立深度人际连接</span></div>
+      <div class="cond"><div class="cdot"></div><span>心理上能适应相对安静、自给的田园生活</span></div>
+    </div>
+    <a href="https://jsj.top/f/gjXX0w" target="_blank" class="form-btn">填写报名表单 →</a>
+    <div class="qr-row">
+      <div class="qr-box">
+        <img src="imgs/qr-01.jpg" alt="微信公众号二维码">
+        <div class="qr-lbl">扫码关注<br>田园营造社</div>
+      </div>
+      <div class="qr-txt">
+        <strong>也可以通过微信公众号联系我们</strong><br>
+        扫描左侧二维码关注「田园营造社」公众号。<br><br>
+        提交表单后请耐心等候，发起人会通过微信与您一对一联系。
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <div class="flo">田园营造社</div>
+    <div class="fme">共识社区计划 v1.0 · 非营利项目</div>
+    <div class="fme">个人观点，仅供参考</div>
+  </div>
+  <div class="fqr">
+    <img src="imgs/qr-02.jpg" alt="公众号二维码">
+    <div class="fqr-t">微信公众号<br>田园营造社</div>
+  </div>
+</footer>
+<div id="modal-health" class="modal" onclick="closeModal(event,this)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('modal-health').classList.remove('open')">✕</button>
+    <div class="modal-scroll">
+      <h1 class="ap-h1">告别都市病：在山水间重建身体的防御系统</h1>
+      <div class="ap-divider"></div>
+      <p class="ap-p">我发起的这个田园生活共识社区，除了追求思想独立和自由、警惕消费主义陷阱外，核心驱动力其实是对自身健康的长远考虑。这不仅仅是对气候和风景的追求，更是想重建一套有科学论证支持的健康生活方式，让我们活得更久，质量更高。</p>
+<p class="ap-p">我是一个热爱生活的人，虽然不是健康方面的专业人士，但我对这方面的研究一直十分关注。我设想的这种生活方式所带来的健康益处，是任何药物都难以替代的。这本质上是一场关于"生活主权"的夺回策略——如果我们连自己的身体健康都无法保障，那么所有的自由和共识都将失去物理承载。</p>
+<h2 class="ap-h2">环境红利：逃离不可见的城市毒素</h2>
+<p class="ap-p">研究不断揭示，城市和高密度生活区、工业区的空气污染对我们的身体损害有多么严重。与全因死亡率和各类慢病风险高度相关，它和吸烟一样，没有任何所谓的"安全剂量"。也就是说，能躲多远躲多远，越早越好。</p>
+<p class="ap-p">与此同时，可怕的隐形杀手——微塑料，正无声无息地渗透到食物、饮用水和空气中，最后累积在我们的器官、血液甚至大脑里。这不仅是肠胃的问题，它会使心梗、中风、痴呆症和全因死亡的复合风险增加数倍。我提倡远离城市、自给自足，就是为了从物理上切断这些毒素的入侵路径。在西南的山水间，我们呼吸的是带有负氧离子的纯净空气，喝的是未经工业循环的地表水源，这在未来将是最稀缺的奢侈品。</p>
+<h2 class="ap-h2">能量回归：用原生食物与自然劳作重启本能</h2>
+<p class="ap-p">不健康的饮食模式是导致死亡的首要因素。社区鼓励多吃原生、未加工的食物，避开那些充斥着添加剂、人造糖和防腐剂的"科技狠活儿"。这些超加工食品会干扰我们的代谢系统，诱发身体的慢性炎症，导致我们长期处于一种亚健康的焦虑状态。</p>
+<p class="ap-p">除了饮食，运动是最好的医生。在田园中照顾花草、喂养动物、平整土地，这种自然的劳作方式天然具备了有氧运动和力量训练的属性，远比在健身房里枯燥举铁更具持续性，也更有心理获得感。年过40岁后，肌肉流失开始加速，田园生活能保障每日充足的身体活动量和必要的日照。科学研究表明，每分钟的高强度自然活动甚至可以换来几倍的额外健康寿命。这种健康红利，是我们抵御未来生活波动的底气。</p>
+<h2 class="ap-h2">心理契约：高质量社交是最后的生理屏障</h2>
+<p class="ap-p">现代社会的一个隐形杀手是孤独感。原子化的个体在数字化浪潮中日益孤立，缺乏真实、深度的社会连接，这会直接损害免疫系统。我们建立共识社区，是为了找回一种"基于理性的互助网络"。</p>
+<p class="ap-p">当一群志同道合、经济独立的人聚在一起，这种高质量的社交连接本身就是一种长寿基因。在社区里，你不再是一个被大系统物化的工具人，而是一个鲜活的、有支撑的邻里。这种心理上的安定感和归属感，能够显著降低皮质醇水平，提升我们应对压力和黑天鹅事件的心理韧性。</p>
+<h2 class="ap-h2">健康是自由的终极底座</h2>
+<p class="ap-p">告别都市病，不仅是地理空间上的位移，更是生命秩序的重塑。在人工智能和算法重构世界的今天，守住健康的体魄和清醒的大脑，是我们维持个体独立性的最后堡垒。田园共识社区不仅仅是一个住所，它是一处基于生物本能和理性公约建立的防御系统。我们在这里重建的，是人类作为自然生物本该拥有的健康主权，从而让我们有足够的精力和寿命，去探索生命更多的可能性。</p>
+
+      <div class="ap-refs"><h3 class="ap-refs-title">参考资料</h3>
+<div class="ap-ref"><a href="https://www.nejm.org/doi/full/10.1056/NEJMoa2309822" target="_blank" class="ap-ref-link">Microplastics and Vascular Disease Risk: A Clinical Observation (NEJM, 2024)</a><p class="ap-ref-desc">新英格兰医学杂志发布，首次在人类颈动脉斑块中发现微塑料，证实其显著增加心脏病和中风风险。</p></div>
+<div class="ap-ref"><a href="https://www.bmj.com/content/384/bmj-2023-077310" target="_blank" class="ap-ref-link">Ultra-processed food consumption and 30+ health outcomes (BMJ, 2024)</a><p class="ap-ref-desc">该研究明确指出，高超加工食品摄入与心血管疾病、常见精神障碍和全因死亡风险增加直接相关。</p></div>
+<div class="ap-ref"><a href="https://doi.org/10.1371/journal.pmed.1000316" target="_blank" class="ap-ref-link">Social Relationships and Mortality Risk: A Meta-analytic Review (PLOS Medicine, 2010)</a><p class="ap-ref-desc">研究发现，高质量的社交关系对寿命的延长作用等同于戒烟，且远超过单纯运动带来的益处。</p></div>
+</div>
+    </div>
+  </div>
+</div>
+<div id="modal-governance" class="modal" onclick="closeModal(event,this)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('modal-governance').classList.remove('open')">✕</button>
+    <div class="modal-scroll">
+      <h1 class="ap-h1">田园社区建设探索：从中心化到独立个体共识的路径</h1>
+      <div class="ap-divider"></div>
+      <p class="ap-p">目前大多数田园社区实践，普遍采取了中心化的结构：由少数发起人主导选址、组织生产并筛选参与者。这种模式虽然在启动初期具有效率和目标清晰的优势，但从多数失败的结局来看，其内在的结构性风险不容忽视：发起人往往承担了过重的责任，而参与者则可能产生依附心理，在遇到挑战时容易退缩。</p>
+<p class="ap-p">我所探索的方向，是最大限度削弱领导者和依附关系、基于"独立个体自由组成"的去中心化社区。其核心连接不是统一的经济利益或行政命令，而是对共同生活理念的底层认同。这种认同不仅是感性的，更是理性的、技术性的。</p>
+<h2 class="ap-h2">权力消解：构建无依附的邻里关系</h2>
+<p class="ap-p">在我们的共识社区中，管理的概念被"协作"所取代。我们不希望看到一个高高在上的决策中枢，因为那意味着风险的高度集中。通过构建扁平化的议事规则，我们将决策权归还给每一位利益相关的成员。这要求参与者不仅要拥有清晰的自我认知，更要具备主动承担责任的能力，而不是盲目"上车"后期待被他人照顾。</p>
+<h2 class="ap-h2">核心机制：共识决策法与"阻拦权"</h2>
+<p class="ap-p">为了保障实质性的平等，我们引入了基于共识的决策流程。这并非简单的"少数服从多数"，因为多数人的暴力往往会牺牲少数个体的关键利益。其核心在于"阻拦权（Blocking Right）"的应用。</p>
+<p class="ap-p">所谓的共识决策，大致分为：提案、充分的逻辑商议、收集异议、修正提案、直到没有任何人行使阻拦权。阻拦权不是为了破坏，而是为了保护——当一项决策严重违背社区核心公约或危及个体生存基础时，任何成员都有权行使这一权利。这种机制迫使我们必须进行深度的沟通和利益对齐，虽然在形式上变慢了，但在执行层面却拥有了最坚固的基石。</p>
+<h2 class="ap-h2">规则意识：让契约成为社区的生命线</h2>
+<p class="ap-p">在这种去中心化的架构下，规则不再是外部强加的约束，而是成员共同进退的契约。我们强调决策见阳光、事事有回声，资源的动用应在透明的协议下进行。这种透明度不仅是为了防范风险，更是为了建立成员间最底层的信义。当权力和神秘感消失，真实的、基于理性的协作才能真正发生。</p>
+<h2 class="ap-h2">用共识代码重构社会主权</h2>
+<p class="ap-p">从中心化到独立个体共识的转型，本质上是一场关于"社会治理模型"的微观实验。在算法和强权交织的未来，能够保护我们的只有我们彼此认同的理性契约。田园共识社区不追求宏大的组织形式，而追求规则的穿透力。当我们不再依附于权威，而是通过"阻拦权"与"共识法"守望相助时，我们才真正拥有了对生活的主权。这是一种更高级的文明形态，也是我们在不确定时代的终极避风港。</p>
+
+      <div class="ap-refs"><h3 class="ap-refs-title">参考资料</h3>
+<div class="ap-ref"><a href="https://www.mdpi.com/2071-1050/13/15/8148" target="_blank" class="ap-ref-link">Collective Identity Supporting Sustainability Transformations in Ecovillage Communities</a><p class="ap-ref-desc">研究生态村发现，共同价值与身份认同是社区运作核心，比经济利益更能维持长期协作。</p></div>
+</div>
+    </div>
+  </div>
+</div>
+<div id="modal-connection" class="modal" onclick="closeModal(event,this)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('modal-connection').classList.remove('open')">✕</button>
+    <div class="modal-scroll">
+      <h1 class="ap-h1">在技术奇点爆发的前夜，找回真实的碳基联结</h1>
+      <div class="ap-divider"></div>
+      <p class="ap-p">在这个社会变化不断加速的时代，我们聚在一起并非为了简单的"隐居"，而是希望在人工智能海啸席卷而来时，通过实践找到一种更稳定、更健康、有意义的生活方式。万事开头难，能够迈出实践性的一步，在原子化的社会里寻找同频者，这比任何宏大的构思都更有意义。</p>
+<h2 class="ap-h2">技术奇点：当生存坐标被算法重构</h2>
+<p class="ap-p">我们正处在技术奇点爆发的前夜。所谓"技术奇点"，通俗地说，就是人工智能在逻辑、运算和推理方面全面超越人类的临界点。在这个点之后，社会权力的运行逻辑将不可避免地向算法靠拢。虽然物质丰饶的时代可能加速到来，但我们现有的社会体制和心理调适能力，显然还没准备好迎接这场剧变。</p>
+<p class="ap-p">千百年来，人类的价值观都建立在"资源有限"的基础上：因为资源少，我们必须竞争、奋斗，金钱成了衡量人的核心标尺。然而，当技术进步让生存成本大幅降低，我们为什么而活？这种"目标感的缺失"是丰饶时代必然伴随的副作用。如果不再需要为了生存而拼命工作，如何寻找生命的坐标？</p>
+<h2 class="ap-h2">避险逻辑：物理空间的真实互助</h2>
+<p class="ap-p">在大城市里，我们看似拥有便利的生活，实则是一个个脆弱的、孤立的个体。这种"数字化的连接"在承平时期看起来很美，但一旦系统出现波动——无论是黑天鹅事件还是旧秩序的震荡——缺乏真实物理互动关系的城市人，其应对能力极低。</p>
+<p class="ap-p">相比之下，一个在物理空间上有真实互动、拥有基本自给自足能力、且具备深度信任的田园社区，能提供一种踏实的安全感。这种安全感不仅源于自己种的干净食物，更源于成员之间在面临复杂情况时，能够坐下来共同商量、互相扶持。这种"碳基生命"的信义，是屏幕后的点赞和群聊无法替代的。</p>
+<h2 class="ap-h2">邓巴数限制：重塑高信任的熟人社会</h2>
+<p class="ap-p">我们将社区规模限制在50-100人之间，这正是为了符合人类进化的生理限制——邓巴数。在这个范围内，每个人都能与他人建立真实的、有深度的了解。在这里，你不再是一个被大系统物化的ID，而是一个鲜活的邻里。我们提倡回归这种小规模、高共识的模式，在真实世界中找回自我。与其在虚拟世界里海量连接，不如在西南的山水间，与几十位清醒的同路人建立高质量的社交。</p>
+<h2 class="ap-h2">在算法时代守护人类的灵魂火种</h2>
+<p class="ap-p">技术奇点可能会改变所有的生产关系，但它无法取代人类对真实联结的渴望。田园共识社区不仅是一个物理的定居点，它是一处精神的避风港。在这里，我们通过共同的劳动和理性的对话，对抗数字时代带来的异化与孤独。当硅基智能接管了逻辑与效率，我们选择守护碳基生命最珍贵的天赋：同理心、信任与真实的陪伴。这种联结，将帮助我们应对未来所有不确定性。</p>
+
+      <div class="ap-refs"><h3 class="ap-refs-title">参考资料</h3>
+<div class="ap-ref"><a href="https://theecologist.org/2012/mar/30/why-communal-living-21st-century-answer-low-carbon-life" target="_blank" class="ap-ref-link">Why communal living is the 21st century answer to low carbon life</a><p class="ap-ref-desc">互助居住社区让人们自然而然地分享资源、技能和时间，互相帮助，实现共同目标。</p></div>
+<div class="ap-ref"><a href="https://www.weforum.org/publications/the-future-of-jobs-report-2025/" target="_blank" class="ap-ref-link">The Future of Jobs Report 2025</a><p class="ap-ref-desc">预计到2030年，大量工作被AI替代或重构，"人类技能"的价值将向社交、创造力和意义感转移。</p></div>
+</div>
+    </div>
+  </div>
+</div>
+<div id="modal-independence" class="modal" onclick="closeModal(event,this)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('modal-independence').classList.remove('open')">✕</button>
+    <div class="modal-scroll">
+      <h1 class="ap-h1">田园共识社区：结构性危机下的自我保护与群体探索</h1>
+      <div class="ap-divider"></div>
+      <p class="ap-p">未来5至10年，我们正面临一场由人口结构、经济模式和技术革命叠加而成的深层结构性危机。人口断崖式下跌与深度老龄化正在瓦解现有的公共服务体系。在悲观的当下与不确定的未来中，"田园共识生活社区"所秉持的去中心化、个体独立与高共识互助，本质上是一套应对系统性风险的生存策略。</p>
+<h2 class="ap-h2">应对公共服务收缩：从系统依赖到个体独立</h2>
+<p class="ap-p">未来最严峻的挑战之一是养老金、医保等福利体系的长期可持续性。随着劳动人口抚养比的下降，维持现有的福利水平在宏观上是极具挑战的。田园共识社区的核心理念就是在主动应对这种困境。</p>
+<p class="ap-p">我们的社区架构基于"独立个体自由组成"，连接基础是对共同理念的认同，而非统一的经济利益或福利保障。社区明确要求所有成员自主承担生活成本和财务风险，不设立统一的经济体或养老保障。这种模式迫使个体实现经济上的自给自足，而不是指望大系统的兜底。</p>
+<h2 class="ap-h2">资产重构：降低对泡沫资产的依附</h2>
+<p class="ap-p">在房地产退潮的背景下，我们将经济安全定义为"低杠杆、高流动性与高技能"。通过租用乡村闲置房屋而非购买城市过剩房产，我们实际上在优化资产负债表，降低了对城市泡沫资产的依赖。同时，社区要求成员必须具备持续的学习能力，以应对AI对传统劳动力市场的冲击。</p>
+<p class="ap-p">我们认为，一个健康的社区是由一群"经济稳定"的人组成的。每位成员将自身的财务健康视为对社区的最大贡献，这鼓励我们建立审慎的消费习惯，对冲投资风险，在西南的田野中构筑一道财务防线。</p>
+<h2 class="ap-h2">重建人本支持：小规模互助对抗公共收缩</h2>
+<p class="ap-p">老龄化社会必然导致公共医疗资源的相对短缺。我们通过建立本地化、高信任度的互助网络来填补这一空白。社区控制在100人以内的规模，确保了成员间的高频接触与深度信任。当公共服务可能出现收缩时，这种基于"熟人社会"逻辑的同龄互助，能为我们提供尊严与陪伴，对抗数字化时代深重的原子化孤独感。</p>
+<h2 class="ap-h2">做自己生活的主权者</h2>
+<p class="ap-p">个体独立并不意味着孤立，而是一种更高级的连接——由独立强者组成的自愿同盟。在未来的经济风暴中，最安全的资产不是银行卡上的数字，而是你健康的体魄、持续学习的能力，以及那一群能共同进退的邻里。田园共识社区不仅是在寻找一片土地，更是在重构一种生存的主权。当我们不再单向地依附于不确定的宏大系统，而是通过理性的自我保护和群体互助站稳脚跟时，我们才真正拥有了面对未来的自由。</p>
+
+      <div class="ap-refs"><h3 class="ap-refs-title">参考资料</h3>
+<div class="ap-ref"><a href="https://openknowledge.worldbank.org/entities/publication/c5e6864a-6430-4add-bed4-2235b8abc10c" target="_blank" class="ap-ref-link">China Economic Update, June 2024 — World Bank</a><p class="ap-ref-desc">世界银行深度报告，详细分析了人口老龄化对财政收入及现有养老金制度可持续性的挑战。</p></div>
+<div class="ap-ref"><a href="https://www.stockholmresilience.org/download/18.10119fc11455d3c557d6d21/1459560242299/SU_SRC_whatisresilience_sidaApril2014.pdf" target="_blank" class="ap-ref-link">What is resilience? An introduction to social-ecological research</a><p class="ap-ref-desc">韧性思维包含学习、多样性，以及最重要的信念：人类与自然紧密相连，以至于应该将二者视为一个社会生态系统。</p></div>
+</div>
+    </div>
+  </div>
+</div>
+<div id="modal-spring" class="modal" onclick="closeModal(event,this)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('modal-spring').classList.remove('open');document.body.style.overflow=''">✕</button>
+    <div class="modal-scroll">
+      <h1 class="ap-h1">冬春 · 百花盛开</h1>
+      <div class="ap-divider"></div>
+      <p class="ap-p sm-lead">西南山地独特的立体气候，让同一片土地在不同海拔呈现截然不同的四季风貌。山脚下，冬日樱花、茶花、杜鹃次第盛开；山腰间，梯田与花海交相辉映；山顶上，皑皑白雪与蓝天相接。低海拔区域冬季仍然温暖如春，满山花海，高山上却是一派北国风光，充分展现出当地巨大的垂直落差带来的丰富自然景观。这种景观多样性，是平原地区难以想象的自然馈赠。</p>
+      <div class="sm-grid">
+  <img class="sm-img sm-img-wide" src="imgs/card-05.jpg" alt="">
+  <img class="sm-img" src="imgs/card-06.jpg" alt="">
+  <img class="sm-img" src="imgs/card-07.jpg" alt="">
+  <img class="sm-img" src="imgs/card-08.jpg" alt="">
+</div>
+
+    </div>
+  </div>
+</div>
+</div>
+<div id="modal-cloud" class="modal" onclick="closeModal(event,this)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('modal-cloud').classList.remove('open');document.body.style.overflow=''">✕</button>
+    <div class="modal-scroll">
+      <h1 class="ap-h1">晨夕 · 云海涌动</h1>
+      <div class="ap-divider"></div>
+      <p class="ap-p sm-lead">每逢清晨与傍晚，西南山地的气温差异催生壮阔的云海奇观。整片山谷被白色云雾填满，远处的山峰如岛屿般浮现其上，村落时隐时现，宛若置身仙境。这种景象在雨季后的晴日最为壮观，往往持续数小时，是大自然馈赠给山居生活的日常礼物。</p>
+      <div class="sm-grid">
+  <img class="sm-img sm-img-wide" src="imgs/card-09.jpg" alt="">
+  <img class="sm-img" src="imgs/card-10.jpg" alt="">
+  <img class="sm-img" src="imgs/card-11.jpg" alt="">
+  <img class="sm-img" src="imgs/card-12.jpg" alt="">
+</div>
+
+    </div>
+  </div>
+</div>
+</div>
+<div id="modal-lake" class="modal" onclick="closeModal(event,this)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('modal-lake').classList.remove('open');document.body.style.overflow=''">✕</button>
+    <div class="modal-scroll">
+      <h1 class="ap-h1">各处 · 湖光山色</h1>
+      <div class="ap-divider"></div>
+      <p class="ap-p sm-lead">西南山地水系丰沛，高山湖泊、江河溪流星罗棋布。湖水清碧，倒映着四周的青山与蓝天，湖岸边古树参天，偶有白鹭翩翩而过。这里的水，未经工业污染，有些村庄可以泉水直通院落，直接饮用，是真正意义上的天然矿泉水。</p>
+      <div class="sm-grid">
+  <img class="sm-img sm-img-wide" src="imgs/card-13.jpg" alt="">
+  <img class="sm-img" src="imgs/card-14.jpg" alt="">
+  <img class="sm-img" src="imgs/card-15.jpg" alt="">
+  <img class="sm-img" src="imgs/card-16.jpg" alt="">
+  <img class="sm-img" src="imgs/card-17.jpg" alt="">
+  <img class="sm-img" src="imgs/card-18.jpg" alt="">
+</div>
+
+    </div>
+  </div>
+</div>
+</div>
+<div id="modal-forest" class="modal" onclick="closeModal(event,this)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('modal-forest').classList.remove('open');document.body.style.overflow=''">✕</button>
+    <div class="modal-scroll">
+      <h1 class="ap-h1">夏秋 · 森呼吸</h1>
+      <div class="ap-divider"></div>
+      <p class="ap-p sm-lead">西南山地保存着中国最完好的原始森林带之一。夏秋之际，林间郁郁葱葱，古木参天，苔藓覆盖着每一块石头，空气中弥漫着清冽的草木气息。科学研究表明，原始森林中的负氧离子浓度是城市的数十倍，在这里深呼吸，是对身心最温柔的修复。徒步其间，时间仿佛放慢了脚步。</p>
+      <div class="sm-grid">
+  <img class="sm-img sm-img-wide" src="imgs/card-19.jpg" alt="">
+  <img class="sm-img" src="imgs/card-20.jpg" alt="">
+  <img class="sm-img" src="imgs/card-21.jpg" alt="">
+</div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function tF(b){const i=b.closest('.fi'),o=i.classList.contains('open');document.querySelectorAll('.fi.open').forEach(e=>e.classList.remove('open'));if(!o)i.classList.add('open');}
+
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(e,el){
+  if(e.target===el){el.classList.remove('open');document.body.style.overflow='';}
+}
+document.querySelectorAll('.modal-close').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    btn.closest('.modal').classList.remove('open');
+    document.body.style.overflow='';
+  });
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal.open').forEach(m=>{m.classList.remove('open');document.body.style.overflow='';});
+  }
+});
+
+const ob=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');ob.unobserve(e.target);}});},{threshold:0.07});
+document.querySelectorAll('.rev').forEach(el=>ob.observe(el));
+</script>
+</body>
+</html>
