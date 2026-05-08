@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>匹配度测评 — 田园营造社</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC',sans-serif;background:#faf6ef;color:#2a1f14;line-height:1.7;-webkit-font-smoothing:antialiased}
+.back-link{
+  position:fixed;top:1rem;left:1.2rem;z-index:300;
+  font-family:'Noto Sans SC',sans-serif;font-size:0.82rem;
+  color:#4a2f1e;text-decoration:none;
+  padding:0.4rem 0.95rem;border:1px solid #ddd5c4;
+  background:rgba(244,237,224,0.9);backdrop-filter:blur(8px);
+  transition:all 0.2s;border-radius:1px;letter-spacing:0.04em
+}
+.back-link:hover{border-color:#8a7b68;background:rgba(244,237,224,1);color:#2a1f14}
+#loading-screen{
+  position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#faf6ef;z-index:200;transition:opacity 0.3s
+}
+#loading-screen.hidden{opacity:0;pointer-events:none}
+.spinner{width:32px;height:32px;border:2px solid #ddd5c4;border-top-color:#3d5230;border-radius:50%;animation:spin 0.9s linear infinite;margin-bottom:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:'Noto Serif SC',serif;font-size:14px;color:#8a7b68;font-weight:300;letter-spacing:0.05em}
+@media(max-width:600px){
+  .back-link{top:0.7rem;left:0.8rem;font-size:0.78rem;padding:0.35rem 0.8rem}
+}
+</style>
+</head>
+<body>
+<a href="./index.html" class="back-link">← 返回首页</a>
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <p class="loading-text">正在加载测评工具…</p>
+</div>
+<div id="root"></div>
+<script type="text/babel" data-presets="env,react">
+const { useState, useRef, useEffect } = React;
+
+const C = {
+  soil: '#2a1f14', bark: '#4a2f1e', moss: '#3d5230', sage: '#6b8059',
+  straw: '#c9b08a', cream: '#f4ede0', parchment: '#ebe1ce', mist: '#ddd5c4',
+  stone: '#8a7b68', gold: '#b8874a', warm: '#faf6ef'
+};
+
+// ─── ADVISOR ────────────────────────────────────────────────────────────────
+
+const SYS = `你是「田园营造社」共识社区计划的AI顾问，名字叫「山问」。这是一个在中国西南山地筹建中的去中心化自治田园社区，面向40-50岁对城市生活感到疲倦、寻求真实社群联结的人群。
+
+核心信息：
+- 模式：去中心化，共识决策（六步法+阻拦权机制），以契约代替权力垄断
+- 选址：西南山地，有山有水、气候温润、距百万人口城市200km以内，5km内有50户以上自然村落
+- 成本：独立院落月租约1000元，西南山地生活成本远低于大城市
+- 准入：具备独立生活能力、身体健康可从事中等强度体力劳动、不依赖农业种植可维持生活
+- 现状：筹备期——网络社群建立、线下见面、实地踏勘、参与公约讨论
+- 四大支柱：健康、治理（共识自治）、联结（真实碳基社交）、独立（应对结构性危机）
+- 加入/退出：完全自由，无经济绑定，筹备期只需表达意向无需承诺
+- 公约：田园共创公约v1.1
+- 报名：jsj.top/f/gjXX0w，公众号「田园营造社」
+
+回答原则：温暖真诚不推销，帮用户思考而非说服他加入，简洁100-180字，不确定的坦诚说明需联系发起人。当用户发来一份「洞察报告」时，先认真阅读报告内容，再结合报告中的线索进行深度对话，引导他探索真正想要的生活和生命联结的意义。`;
+
+const HINTS = [
+  '我年近五十，适合加入吗？',
+  '月花费大概多少？',
+  '现在项目到什么阶段了？',
+  '性格内向的人适合吗？',
+  '选址在哪，什么时候确定？',
+  '如何保证不像其他社区一样失败？',
+];
+
+// 离线/无 API 环境下，根据用户问题关键词给出预设回应
+function buildMockReply(q) {
+  const t = q.toLowerCase();
+  const has = (...ks) => ks.some(k => q.includes(k) || t.includes(k.toLowerCase()));
+  const tail = '\n\n（当前为离线演示版回复，正式版由 Claude Sonnet 实时生成。）';
+
+  if (has('五十', '50', '年龄', '岁')) {
+    return '40-50岁正是这个社区最核心的目标人群——有阅历、有判断、对生活有自己的主见。没有年龄上限，主要门槛是身体健康、能从事中等强度的体力劳动。年龄不是问题，重要的是你心里那种"不想再这样过下去了"的清醒。' + tail;
+  }
+  if (has('花费', '成本', '钱', '月租', '收入')) {
+    return '西南山地的生活成本远低于大城市。独立院落月租约1000元，加上日常开销，一个人每月3000-5000元可以过得相当从容。社区不经手任何资金，房子是你和房东直接交易的。' + tail;
+  }
+  if (has('阶段', '进度', '现在', '什么时候')) {
+    return '目前在筹备期。具体在做的事：网络社群持续交流、线下小规模见面、实地踏勘几个候选地、共同讨论和修订《田园共创公约》。这个阶段没有时间压力——筹备期本身就是筛选机制，真正认同的人不会因"太慢"而离开。' + tail;
+  }
+  if (has('内向', '社交', '独处')) {
+    return '非常适合。社区设计的初衷恰恰是给珍视独处、又渴望深度联结的人——每家独立院落，充分尊重边界。不会有团建、不会有强制活动。你可以一个人静处很久，也可以在状态好时走进邻里。内向的人往往更需要这种节奏。' + tail;
+  }
+  if (has('选址', '地方', '哪里', '哪儿')) {
+    return '候选区域在中国西南，具体选址还在考察中。标准是：有山有水、视野开阔、气候温润、海拔800-1500米，距离百万人口城市不超过200公里，5公里内有50户以上自然村落，有基本医疗配套。最终选址会由全体意向成员共同参与决策。' + tail;
+  }
+  if (has('失败', '风险', '其他社区', '靠谱')) {
+    return '诚实回答：没法保证不失败。但我们做了几件事来对冲风险——去中心化（没有强势领导者，也就没有领导者崩塌的风险）、不经手资金（每个人经济独立，不会因社区破产而受损）、漫长筹备期（用时间筛掉冲动者）、加入退出完全自由（没有沉没成本）。这些都不能保证成功，只能保证就算不成功，每个人也都能全身而退。' + tail;
+  }
+  if (has('退出', '离开', '后悔')) {
+    return '随时可以退出，没有任何经济绑定或惩罚。在筹备期甚至不需要做出承诺——只是表达意向、保持联系。正因为离开是自由的，留下的选择才更有重量。' + tail;
+  }
+  if (has('家人', '父母', '配偶', '孩子', '伴侣')) {
+    return '家人的态度是很多人迟迟无法行动的真实原因，值得认真面对。先不急着说服，把自己的思考整理清楚，找合适的时机深谈。这个社区的好处之一是不要求你立刻搬过去——筹备期可以长达数年，足够时间和家人共同消化这个选择。' + tail;
+  }
+  if (has('健康', '医疗', '生病')) {
+    return '选址硬性要求是距离百万人口城市不超过200公里，确保大病时可以去三甲医院。日常的小病小痛、慢性病管理，乡镇卫生院基本能覆盖。社区本身不提供医疗，每个人对自己的健康负责。建议加入前做一次全面体检，对自己的身体状况心里有数。' + tail;
+  }
+  if (has('报告', '洞察', '匹配')) {
+    return '看到你的报告了。报告里有一些值得我们再聊一聊的地方——比如你提到的那些契合点，是真的从内心认同，还是更多是一种向往？还有那些挑战，你打算怎么面对？我们可以一条一条慢慢聊，不急。' + tail;
+  }
+
+  return '这是一个值得认真聊的问题。在离线演示模式下，我能给你的回应有限。如果想深入了解，可以关注公众号「田园营造社」与发起人直接对话，也可以在表达意向后加入筹备期的网络社群。' + tail;
+}
+
+function Advisor({ msgs, setMsgs }) {
+  const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [stream, setStream] = useState('');
+  const [chatCopied, setChatCopied] = useState(false);
+  const bottom = useRef(null);
+
+  useEffect(() => { bottom.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs, stream]);
+
+  async function send(text) {
+    const q = (text || input).trim();
+    if (!q || busy) return;
+    const history = [...msgs, { role: 'user', content: q }];
+    setMsgs(history); setInput(''); setBusy(true); setStream('');
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 600, stream: true, system: SYS, messages: history }),
+      });
+      if (!res.ok) throw new Error('API not ok: ' + res.status);
+      const reader = res.body.getReader(); const dec = new TextDecoder(); let full = '';
+      while (true) {
+        const { done, value } = await reader.read(); if (done) break;
+        for (const line of dec.decode(value).split('\n')) {
+          if (!line.startsWith('data: ')) continue;
+          const d = line.slice(6).trim(); if (d === '[DONE]') continue;
+          try { const p = JSON.parse(d); if (p.type === 'content_block_delta' && p.delta?.text) { full += p.delta.text; setStream(full); } } catch {}
+        }
+      }
+      if (!full) throw new Error('Empty response');
+      setMsgs(prev => [...prev, { role: 'assistant', content: full }]);
+    } catch (err) {
+      console.warn('API unavailable, using mock reply:', err);
+      const mock = buildMockReply(q);
+      setMsgs(prev => [...prev, { role: 'assistant', content: mock }]);
+    }
+    finally { setBusy(false); setStream(''); }
+  }
+
+  const empty = msgs.length === 0 && !stream && !busy;
+  const Av = () => (
+    <div style={{ flexShrink:0, width:27, height:27, background:C.moss, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, color:C.cream, fontFamily:`'Noto Serif SC',serif`, marginTop:3 }}>山</div>
+  );
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
+      {empty && (
+        <div style={{ animation:'fadeUp 0.4s ease' }}>
+          <div style={{ background:C.parchment, borderLeft:`3px solid ${C.gold}`, padding:'16px 20px', marginBottom:24 }}>
+            <p style={{ margin:0, fontSize:14, color:C.bark, lineHeight:2, fontFamily:`'Noto Serif SC',serif`, fontWeight:300 }}>
+              你好。我是山问，这个社区计划的 AI 顾问。<br/>
+              有任何疑问可以直接问。也可以把你的「匹配洞察报告」粘贴给我，我们一起聊得更深。
+            </p>
+          </div>
+          <p style={{ fontSize:12, color:C.stone, letterSpacing:'0.08em', margin:'0 0 10px' }}>你可能想问的</p>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:28 }}>
+            {HINTS.map(h => (
+              <button key={h} onClick={() => send(h)}
+                style={{ padding:'8px 14px', border:`1px solid ${C.mist}`, background:C.cream, color:C.bark, fontSize:13, transition:'all 0.18s' }}
+                onMouseEnter={e=>{e.currentTarget.style.background=C.parchment;e.currentTarget.style.borderColor=C.stone;}}
+                onMouseLeave={e=>{e.currentTarget.style.background=C.cream;e.currentTarget.style.borderColor=C.mist;}}>
+                {h}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <div style={{ flex:1 }}>
+        {msgs.map((m,i) => (
+          <div key={i} style={{ marginBottom:18, display:'flex', justifyContent:m.role==='user'?'flex-end':'flex-start', alignItems:'flex-start', gap:9, animation:'fadeUp 0.3s ease' }}>
+            {m.role==='assistant' && <Av/>}
+            <div style={{ maxWidth:'78%', padding:'12px 16px', background:m.role==='user'?C.moss:C.cream, color:m.role==='user'?C.cream:C.soil, fontSize:14, lineHeight:1.9, whiteSpace:'pre-wrap', fontFamily:m.role==='assistant'?`'Noto Serif SC',serif`:`'Noto Sans SC',sans-serif`, fontWeight:m.role==='assistant'?300:400 }}>
+              {m.content}
+            </div>
+          </div>
+        ))}
+        {(stream||(busy&&!stream)) && (
+          <div style={{ marginBottom:18, display:'flex', alignItems:'flex-start', gap:9 }}>
+            <Av/>
+            {stream ? (
+              <div style={{ maxWidth:'78%', padding:'12px 16px', background:C.cream, color:C.soil, fontSize:14, lineHeight:1.9, whiteSpace:'pre-wrap', fontFamily:`'Noto Serif SC',serif`, fontWeight:300 }}>
+                {stream}<span style={{ display:'inline-block', width:2, height:13, background:C.gold, marginLeft:3, verticalAlign:'middle', animation:'blink 0.9s infinite' }}/>
+              </div>
+            ) : (
+              <div style={{ padding:'14px 17px', background:C.cream, display:'flex', gap:5, alignItems:'center' }}>
+                {[0,1,2].map(i=><div key={i} style={{ width:6, height:6, background:C.stone, borderRadius:'50%', animation:`bounce 1.2s ${i*0.2}s infinite` }}/>)}
+              </div>
+            )}
+          </div>
+        )}
+        <div ref={bottom}/>
+      </div>
+      <div style={{ position:'sticky', bottom:0, background:C.warm, paddingTop:8 }}>
+        {/* Copy chat — small, unobtrusive */}
+        {msgs.length > 0 && (
+          <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:6 }}>
+            <button
+              onClick={() => {
+                const text = msgs.map(m => `${m.role === 'user' ? '我' : '山问'}：${m.content}`).join('\n\n');
+                const full = `【与山问的对话记录】\n\n${text}`;
+                const ta = document.createElement('textarea');
+                ta.value = full;
+                ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+                document.body.appendChild(ta); ta.focus(); ta.select();
+                let ok = false;
+                try { ok = document.execCommand('copy'); } catch {}
+                document.body.removeChild(ta);
+                if (!ok && navigator.clipboard) navigator.clipboard.writeText(full).catch(()=>{});
+                setChatCopied(true);
+                setTimeout(() => setChatCopied(false), 2200);
+              }}
+              style={{ padding:'4px 10px', border:`1px solid ${chatCopied ? C.moss : C.mist}`, background:'transparent', color: chatCopied ? C.moss : C.stone, fontSize:11, letterSpacing:'0.04em', transition:'all 0.2s', lineHeight:1.5 }}
+              onMouseEnter={e=>{ if(!chatCopied) e.currentTarget.style.borderColor=C.stone; }}
+              onMouseLeave={e=>{ if(!chatCopied) e.currentTarget.style.borderColor=C.mist; }}
+            >
+              {chatCopied ? '✓ 已复制对话' : '复制对话记录'}
+            </button>
+          </div>
+        )}
+        <div style={{ display:'flex', border:`1px solid ${C.mist}`, background:C.cream, transition:'border-color 0.2s' }}
+          onFocusCapture={e=>e.currentTarget.style.borderColor=C.stone}
+          onBlurCapture={e=>e.currentTarget.style.borderColor=C.mist}>
+          <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}}
+            placeholder="问一个问题，或粘贴你的洞察报告…" disabled={busy}
+            style={{ flex:1, padding:'13px 15px', border:'none', background:'transparent', fontSize:13, color:C.soil, fontFamily:`'Noto Sans SC',sans-serif`, outline:'none' }}/>
+          <button onClick={()=>send()} disabled={busy||!input.trim()}
+            style={{ padding:'13px 20px', background:busy||!input.trim()?C.mist:C.moss, color:busy||!input.trim()?C.stone:C.cream, border:'none', fontSize:13, transition:'background 0.2s' }}>
+            发送
+          </button>
+        </div>
+        <p style={{ fontSize:11, color:C.stone, textAlign:'center', margin:'7px 0 0' }}>
+          更深度的交流，关注公众号「田园营造社」与发起人直接对话
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── ASSESSMENT ─────────────────────────────────────────────────────────────
+
+const SECTIONS = ['基本情况', '自我认知', '价值与理念', '外部环境'];
+
+const Qs = [
+  // ── 基本情况 ──
+  { id:'work', sec:'基本情况', type:'single', q:'目前的工作状态', hint:'这决定了迁居后收入的连续性',
+    opts:['可以远程工作','自由职业 / 创业','计划提前退休','已退休','其他，需要另做规划'] },
+
+  { id:'finance', sec:'基本情况', type:'single', q:'经济状况，符合你的是', hint:'入住成本约1000元/月，需要有不依赖农业的稳定来源',
+    opts:['月收入稳定，足以支撑山地生活','有积蓄或被动收入，可支撑2年以上','退休金或养老金稳定','还在规划中，尚不确定'] },
+
+  { id:'health', sec:'基本情况', type:'single', q:'身体状况', hint:'需要能从事中等强度体力劳动',
+    opts:['良好，定期运动','一般，无重大疾病','有慢性病，但稳定管理中','需要长期靠近城市医疗'] },
+
+  { id:'family_care', sec:'基本情况', type:'multi', q:'目前需要照顾的家庭成员', hint:'可多选。这影响你迁居的灵活度与时间线',
+    opts:['未成年子女（需在附近就学）','年迈父母（需定期探视或同住）','需要特殊照料的家庭成员','目前暂无照顾责任','父母健在但可自理，不需要我陪同'] },
+
+  { id:'timeline', sec:'基本情况', type:'single', q:'你考虑的时间线', hint:'社区目前处于筹备期，没有时间压力',
+    opts:['1年内可以行动','2-3年内','4-5年','5年后或更远','还没想好，只是在了解'] },
+
+  // ── 自我认知 ──
+  { id:'social', sec:'自我认知', type:'single', q:'你的社交偏好', hint:'社区设计充分尊重独立边界，每家有独立院落',
+    opts:['内向，珍视独处，少量深度交流即可','偏内向，偶尔需要社交','平衡型，可灵活切换','外向，需要较多社交互动'] },
+
+  { id:'solitude', sec:'自我认知', type:'single', q:'独处能力', hint:'山地生活的物理隔离感远超城市，这一点值得认真面对',
+    opts:['享受独处，它是我恢复能量的方式','可以独处，但需要定期社交充电','独处时容易空虚，需要借助外部刺激','我还不确定自己在长时间独处时会是什么状态'] },
+
+  { id:'nature', sec:'自我认知', type:'single', q:'你与自然的关系', hint:'日常生活与自然高度融合是这里的常态，而非假日体验',
+    opts:['渴望自然，但目前接触不多','户外爱好者，经常亲近自然','在城市里感到窒息，极度渴望','有种植、养殖等实际农村生活经验'] },
+
+  { id:'skills', sec:'自我认知', type:'multi', q:'你有哪些独立生活的能力', hint:'可多选，诚实作答即可',
+    opts:['做饭、日常家务','基础建修与维修','种菜或了解农耕','有医疗、急救知识','面对未知，独立想办法的心态'] },
+
+  { id:'learning', sec:'自我认知', type:'single', q:'面对完全陌生的技能，你通常', hint:'田园生活需要持续学习大量城市里用不到的能力',
+    opts:['主动找资料、请教，享受独立摸索的过程','会学，但更有效率的方式是有人带着','学得比较慢，有些焦虑，但不轻易放弃','比较依赖他人指导，独立摸索有较大困难'] },
+
+  { id:'stress', sec:'自我认知', type:'single', q:'压力大、事情不顺时，你通常', hint:'早期筹备和磨合期对抗压能力的考验远超想象',
+    opts:['给自己空间消化，不迁怒于外，能自行恢复','向信任的人倾诉，得到支持后恢复','会有一段低落期，但最终能走出','压力大时容易爆发或长时间低落，需要较多外部支撑'] },
+
+  // ── 价值与理念 ──
+  { id:'independence', sec:'价值与理念', type:'single', q:'面对主流叙事或外部质疑，你通常', hint:'思想独立性决定了你在社区受到挑战时的稳定度',
+    opts:['独立评估，不因多数人看法轻易改变立场','认真倾听后，依据自己的分析做决定','会受到较大影响，需要较长时间重建判断','比较容易被权威或周围人的观点带走'] },
+
+  { id:'governance', sec:'价值与理念', type:'single', q:'关于去中心化民主治理，你的真实感受', hint:'这是社区运作的核心机制，认同越深，适应越顺',
+    opts:['深度认同，愿意为慢速的民主协商投入大量精力','认同理念，但担心现实中难以执行','理性上接受，情感上更希望有清晰的负责人','倾向于有效率的决策，对冗长协商缺乏耐心'] },
+
+  { id:'conflict', sec:'价值与理念', type:'single', q:'社区发生意见冲突时，你的第一反应', hint:'共识社区中冲突是常态，不是例外',
+    opts:['把冲突视为共识深化的机会，愿意投入时间协商','接受冲突的存在，但需要明确规则推进','冲突让我不舒服，倾向于快速妥协或退让','冲突时容易情绪化，事后往往后悔自己的反应'] },
+
+  { id:'crisis', sec:'价值与理念', type:'single', q:'当社区成员遭遇重大困难，你认为社区的责任是', hint:'这涉及互助的边界——是情感支持，还是经济捆绑',
+    opts:['提供情感支持和临时帮助，长远困境需个人自行解决','量力而行地支持，但不应形成经济依赖','我愿意为真正困难的成员承担实质性共同责任','应事先在公约中明确规定，届时按规则执行'] },
+
+  { id:'lowkey', sec:'价值与理念', type:'single', q:'对于社区保持低调、不主动对外宣传，你的看法', hint:'这是发起人的核心立场，与风险意识密切相关',
+    opts:['完全认同，低调是保护社区的必要选择','理解其必要性，但希望能有限度地分享理念','有些遗憾，觉得这个理念值得更广泛传播','不太理解为什么需要这么谨慎'] },
+
+  { id:'prep', sec:'价值与理念', type:'single', q:'筹备期可能长达数年。对于这段漫长的准备，你', hint:'筹备期本身就是筛选机制——真正认同的人不会因「太慢」而离开',
+    opts:['把筹备期视为共识磨合的必要过程，愿意积极参与线上讨论和线下见面','可以接受，但希望看到明确的推进节奏','有些焦虑，担心等太久会失去热情','越短越好，更期待直接进入实操阶段'] },
+
+  // ── 外部环境 ──
+  { id:'concern', sec:'外部环境', type:'single', q:'你最大的顾虑是', hint:'诚实面对自己最深的担忧',
+    opts:['经济能否可持续','与其他成员相处是否和谐','医疗与紧急情况的处理','会不会后悔或厌倦','家人的支持与接受'] },
+
+  { id:'family_support', sec:'外部环境', type:'single', q:'家人对于这个生活选择的态度', hint:'家庭阻力是很多人迟迟无法行动的真实原因',
+    opts:['支持或理解，不会成为阻力','中立，他们尊重我的选择但不参与','有顾虑，但通过沟通我有信心逐步化解','明确反对，这是目前面临的主要阻力','还没有和家人认真谈过这件事'] },
+
+  { id:'why', sec:'外部环境', type:'multi', q:'是什么让你关注这个项目', hint:'可多选',
+    opts:['厌倦城市生活节奏','寻找真实的人际联结','对结构性风险的担忧（房价、养老等）','健康与身体的考量','认同去中心化自治的理念','纯粹好奇，还在了解阶段'] },
+];
+
+function buildPrompt(ans) {
+  const lines = Qs.map(q => {
+    const a = ans[q.id];
+    const val = Array.isArray(a) ? (a.length ? a.join('、') : '未作答') : (a || '未作答');
+    return `${q.q}：${val}`;
+  }).join('\n');
+
+  return `你是「田园营造社」共识社区计划的AI顾问。根据以下用户20道问题的答案，写一份简短的「洞察报告」。
+
+用户答案：
+${lines}
+
+严格要求：
+1. 总字数控制在280字以内
+2. 不使用任何Markdown符号（不用**、不用#、不用---、不用·）
+3. 整体分三段，段与段之间空一行：
+
+   第一段（约70字）：用有温度、有洞察的语言，描述这个人呈现出的核心特质。要结合他的具体答案，不说套话，不用「您是一个…」开头。
+
+   第二段（约130字）：诚实分析2条契合点和1-2条他真正需要正视的挑战或成长空间。要有针对性，不泛泛而谈。
+
+   第三段（约80字）：平静温暖地邀请他把这份报告带去和山问（AI社区顾问）深聊。山问了解社区全部细节，可以帮他想得更深——不只是关于社区适不适合，也关于他真正想要的生活，以及人与人之间那些值得珍视的联结。引导要自然，不生硬。
+
+4. 语气像真正了解他的朋友，有具体的观察，而非分析报告。`;
+}
+
+// 离线/无 API 环境下的兜底报告——根据用户答案生成有针对性的示例
+function buildMockReport(ans) {
+  const social = ans.social || '';
+  const solitude = ans.solitude || '';
+  const indep = ans.independence || '';
+  const gov = ans.governance || '';
+  const conf = ans.conflict || '';
+  const fam = ans.family_support || '';
+  const concern = ans.concern || '';
+  const why = Array.isArray(ans.why) ? ans.why : [];
+
+  // 第一段：核心特质
+  let p1 = '';
+  if (solitude.includes('享受独处') && indep.includes('独立评估')) {
+    p1 = '你是那种在独处中找回自己的人——不依赖喧嚣，不被多数人的看法轻易带走。这种内在的稳定，在今天已经很稀少。';
+  } else if (social.includes('内向') || solitude.includes('享受独处')) {
+    p1 = '你的安静里有一种笃定。比起热闹，你更看重深度——少而真的关系，远胜于浅而多的应酬。这是这个社区最看重的气质之一。';
+  } else if (indep.includes('独立评估')) {
+    p1 = '你身上有一种难得的清醒——不轻易随波逐流，会自己评估、自己判断。这种思想独立性，是共识社区运转的底层条件。';
+  } else {
+    p1 = '从你的回答里，能感受到一种正在发生的转向——对城市生活节奏的疲惫，对真实联结的渴望，正在让你重新思考"什么样的生活才值得过"。';
+  }
+
+  // 第二段：契合点 + 挑战
+  const fits = [];
+  const challenges = [];
+
+  if (gov.includes('深度认同')) fits.push('对去中心化治理的深度认同');
+  if (conf.includes('视为共识深化')) fits.push('面对冲突时愿意投入协商的耐心');
+  if (why.includes('寻找真实的人际联结')) fits.push('对真实联结的真诚渴望');
+  if (why.includes('认同去中心化自治的理念')) fits.push('与社区底层理念的契合');
+  if (solitude.includes('享受独处')) fits.push('独处能力——这在山地生活中是底气');
+
+  if (gov.includes('倾向于有效率')) challenges.push('对慢速协商的耐心，可能需要在筹备期慢慢培养');
+  if (conf.includes('情绪化')) challenges.push('冲突中的情绪管理，是值得诚实面对的成长空间');
+  if (fam.includes('明确反对')) challenges.push('家人的态度——这往往是迟迟无法行动的真实原因，需要时间和沟通');
+  if (fam.includes('还没有和家人')) challenges.push('和家人深谈这件事，是迈出实质一步前必须经历的');
+  if (concern.includes('经济')) challenges.push('经济可持续性的具体规划，比理念认同更需要落地');
+
+  while (fits.length < 2) fits.push('对自然与健康的基本判断，与社区方向一致');
+  if (challenges.length === 0) challenges.push('真正考验会在筹备期出现——慢节奏、反复磨合、家人态度的变化，这些都需要持续的内在定力');
+
+  const p2 = `契合的地方：${fits.slice(0, 2).join('；')}。需要正视的是：${challenges.slice(0, 2).join('；以及，')}。这些不是要劝退你，而是希望你带着清晰的预期走进来——筹备期本身就是用来共同面对这些的。`;
+
+  // 第三段：邀请
+  const p3 = '把这份报告复制下来，去和山问聊聊吧。它了解社区的全部细节，也可以陪你想得更深一些——不只是这个社区适不适合你，更是关于你真正想要的生活，和那些值得在余下半生里去珍视的人与联结。';
+
+  return `${p1}\n\n${p2}\n\n${p3}\n\n（本次为离线演示版报告，正式版由 Claude Sonnet 实时生成。）`;
+}
+
+function Assessment({ onSwitchToAdvisor }) {
+  const [view, setView] = useState('intro');
+  const [step, setStep] = useState(0);
+  const [ans, setAns] = useState({});
+  const [report, setReport] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [toast, setToast] = useState('');
+
+  useEffect(() => {
+    if (view === 'quiz' || view === 'intro') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step, view]);
+
+  function pick(opt) {
+    const q = Qs[step];
+    if (q.type === 'single') {
+      const updated = { ...ans, [q.id]: opt };
+      setAns(updated);
+      setTimeout(() => advance(updated), 220);
+    } else {
+      setAns(prev => {
+        const cur = prev[q.id] || [];
+        return { ...prev, [q.id]: cur.includes(opt) ? cur.filter(x => x !== opt) : [...cur, opt] };
+      });
+    }
+  }
+
+  function advance(currentAns) {
+    const a = currentAns || ans;
+    if (step < Qs.length - 1) setStep(s => s + 1);
+    else generate(a);
+  }
+
+  async function generate(currentAns) {
+    setView('loading');
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 800, messages: [{ role: 'user', content: buildPrompt(currentAns) }] })
+      });
+      if (!res.ok) throw new Error('API not ok: ' + res.status);
+      const data = await res.json();
+      const text = data.content?.[0]?.text;
+      if (!text) throw new Error('No text in response');
+      setReport(text);
+    } catch (err) {
+      // Fallback: 在 API 不可用的预览环境中，根据答案生成示例报告
+      console.warn('API unavailable, using mock report:', err);
+      setReport(buildMockReport(currentAns));
+    }
+    setView('result');
+  }
+
+  function copyReport() {
+    const copyText = `【田园营造社 · 匹配洞察报告】\n\n${report}\n\n──\n我刚完成了田园营造社的匹配测评，以上是生成的洞察报告。请结合这些信息，帮我更深入地思考：我真正想要什么样的生活？在这个社区里，我有可能找到真实的联结吗？`;
+
+    // 方法一：现代 Clipboard API
+    const tryModern = () => navigator.clipboard && navigator.clipboard.writeText(copyText)
+      .then(() => true).catch(() => false);
+
+    // 方法二：textarea + execCommand（兼容 iframe / 旧环境）
+    const tryLegacy = () => {
+      const ta = document.createElement('textarea');
+      ta.value = copyText;
+      ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch {}
+      document.body.removeChild(ta);
+      return ok;
+    };
+
+    const finish = (ok) => {
+      if (ok) {
+        setCopied(true);
+        setToast('✓ 复制成功！请切换到「问山问」粘贴对话');
+        setTimeout(() => { setCopied(false); setToast(''); }, 3000);
+      } else {
+        setToast('复制失败，请长按报告文字手动选择复制');
+        setTimeout(() => setToast(''), 4000);
+      }
+    };
+
+    tryModern().then(ok => { if (ok) { finish(true); } else { finish(tryLegacy()); } })
+      .catch(() => finish(tryLegacy()));
+  }
+
+  function reset() { setView('intro'); setStep(0); setAns({}); setReport(''); setCopied(false); setToast(''); }
+
+  // ── Intro ──
+  if (view === 'intro') return (
+    <div style={{ textAlign:'center', padding:'3rem 0', animation:'fadeUp 0.4s ease' }}>
+      <h2 style={{ fontFamily:`'Noto Serif SC',serif`, fontSize:28, fontWeight:700, color:C.soil, margin:'0 0 12px', lineHeight:1.3 }}>
+        我适合<br/>这个社区吗？
+      </h2>
+      <div style={{ width:28, height:3, background:C.gold, margin:'0 auto 22px', borderRadius:2 }}/>
+      <p style={{ fontSize:14, color:C.bark, lineHeight:2, margin:'0 0 8px', fontFamily:`'Noto Serif SC',serif`, fontWeight:300 }}>
+        20 道选择题，约 6 分钟。
+      </p>
+      <p style={{ fontSize:13, color:C.stone, lineHeight:1.9, margin:'0 0 10px' }}>
+        AI 生成专属洞察报告，可复制后发给「山问」深度对话。
+      </p>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:8, justifyContent:'center', marginBottom:32 }}>
+        {['经济状况','生活能力','社交能力','思想独立性','民主价值观','抗压能力','学习能力','家庭责任'].map(tag => (
+          <span key={tag} style={{ fontSize:11, color:C.stone, background:C.parchment, padding:'4px 10px', border:`1px solid ${C.mist}` }}>{tag}</span>
+        ))}
+      </div>
+      <button onClick={() => setView('quiz')}
+        style={{ padding:'13px 36px', background:C.moss, color:C.cream, border:'none', fontSize:14, letterSpacing:'0.05em', transition:'background 0.2s' }}
+        onMouseEnter={e=>e.currentTarget.style.background=C.soil}
+        onMouseLeave={e=>e.currentTarget.style.background=C.moss}>
+        开始测评 →
+      </button>
+      <p style={{ fontSize:11, color:C.stone, margin:'14px 0 0' }}>不收集个人信息 · 答案仅用于生成报告</p>
+    </div>
+  );
+
+  // ── Loading ──
+  if (view === 'loading') return (
+    <div style={{ textAlign:'center', padding:'4rem 0' }}>
+      <div style={{ width:40, height:40, border:`2px solid ${C.mist}`, borderTopColor:C.moss, borderRadius:'50%', margin:'0 auto 24px', animation:'spin 0.9s linear infinite' }}/>
+      <p style={{ fontFamily:`'Noto Serif SC',serif`, fontSize:15, color:C.bark, fontWeight:300, margin:'0 0 6px', animation:'pulse 2s infinite' }}>
+        正在生成你的洞察报告…
+      </p>
+      <p style={{ fontSize:12, color:C.stone, margin:0 }}>通常需要 10-15 秒</p>
+    </div>
+  );
+
+  // ── Result ──
+  if (view === 'result') return (
+    <div style={{ animation:'fadeUp 0.5s ease' }}>
+      <div style={{ textAlign:'center', marginBottom:24 }}>
+        <p style={{ fontSize:10, letterSpacing:'0.2em', color:C.stone, textTransform:'uppercase', margin:'0 0 8px' }}>你的洞察报告</p>
+        <div style={{ width:28, height:3, background:C.gold, margin:'0 auto', borderRadius:2 }}/>
+      </div>
+
+      {/* Report */}
+      <div style={{ background:C.parchment, padding:'24px 26px', marginBottom:16, position:'relative' }}>
+        {report.split('\n').filter(l=>l.trim()).map((line, i) => (
+          <p key={i} style={{ fontFamily:`'Noto Serif SC',serif`, fontSize:14, fontWeight:300, color:C.soil, lineHeight:2, margin:'0 0 14px' }}>{line}</p>
+        ))}
+      </div>
+
+      {/* Toast */}
+      {toast && (
+        <div style={{ marginBottom:12, padding:'11px 16px', background: copied ? C.moss : C.bark, color:C.cream, fontSize:13, textAlign:'center', animation:'fadeUp 0.25s ease' }}>
+          {toast}
+        </div>
+      )}
+
+      {/* Copy button */}
+      <button onClick={copyReport}
+        style={{ width:'100%', padding:'13px', border:`1.5px solid ${copied ? C.moss : C.mist}`, background:copied ? C.parchment : C.cream, color:copied ? C.moss : C.bark, fontSize:13, letterSpacing:'0.04em', transition:'all 0.25s', marginBottom:20, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
+        onMouseEnter={e=>{ if(!copied){e.currentTarget.style.borderColor=C.stone;} }}
+        onMouseLeave={e=>{ if(!copied){e.currentTarget.style.borderColor=C.mist;} }}>
+        <span style={{ fontSize:15 }}>{copied ? '✓' : '⎘'}</span>
+        {copied ? '已复制到剪贴板' : '复制报告（含发给山问的提示语）'}
+      </button>
+
+      {/* Guide to 山问 */}
+      <div style={{ background:C.soil, padding:'20px 22px', marginBottom:20 }}>
+        <p style={{ fontFamily:`'Noto Serif SC',serif`, fontSize:13, color:C.straw, margin:'0 0 12px', lineHeight:1.9, fontWeight:300 }}>
+          复制报告后，切换到「问顾问」标签，把报告粘贴给山问。<br/>
+          它可以根据你的答案，和你聊得更深——不只是社区是否适合，也关于你真正想要的生活，以及人与人之间那些值得珍视的联结。
+        </p>
+        <button onClick={onSwitchToAdvisor}
+          style={{ padding:'10px 22px', background:C.gold, color:C.soil, border:'none', fontSize:13, fontWeight:500, letterSpacing:'0.04em', transition:'opacity 0.2s' }}
+          onMouseEnter={e=>e.currentTarget.style.opacity='0.85'}
+          onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+          去和山问深聊 →
+        </button>
+      </div>
+
+      {/* Secondary actions */}
+      <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+        <a href="https://jsj.top/f/gjXX0w" target="_blank" rel="noopener noreferrer"
+          style={{ padding:'10px 20px', background:C.moss, color:C.cream, textDecoration:'none', fontSize:13, letterSpacing:'0.04em', display:'inline-block' }}>
+          填写意向表单
+        </a>
+        <button onClick={reset}
+          style={{ padding:'10px 16px', border:`1px solid ${C.mist}`, background:'transparent', color:C.stone, fontSize:13 }}>
+          重新测评
+        </button>
+      </div>
+    </div>
+  );
+
+  // ── Quiz ──
+  const q = Qs[step];
+  const progress = Math.round((step / Qs.length) * 100);
+  const selected = ans[q.id];
+  const isMulti = q.type === 'multi';
+  const multiSel = Array.isArray(selected) ? selected : [];
+
+  // Section change detection
+  const prevSec = step > 0 ? Qs[step - 1].sec : null;
+  const sectionChanged = prevSec && prevSec !== q.sec;
+
+  return (
+    <div key={step} style={{ animation:'fadeUp 0.3s ease' }}>
+      {/* Progress */}
+      <div style={{ height:3, background:C.mist, margin:'0 0 20px', borderRadius:2 }}>
+        <div style={{ height:'100%', background:C.gold, width:`${progress}%`, transition:'width 0.4s ease', borderRadius:2 }}/>
+      </div>
+
+      {/* Section badge + step */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: sectionChanged ? 0 : 20 }}>
+        <span style={{ fontSize:11, color:C.sage, letterSpacing:'0.12em', textTransform:'uppercase' }}>{q.sec}</span>
+        <span style={{ fontSize:11, color:C.stone, letterSpacing:'0.05em' }}>{step + 1} / {Qs.length}</span>
+      </div>
+
+      {/* Section transition */}
+      {sectionChanged && (
+        <div style={{ borderTop:`1px solid ${C.mist}`, margin:'12px 0 20px', paddingTop:12 }}>
+          <p style={{ fontSize:12, color:C.stone, margin:0, lineHeight:1.7 }}>
+            {q.sec === '自我认知' && '接下来几道题，关于你自己——你的独处能力、学习方式、压力反应。'}
+            {q.sec === '价值与理念' && '接下来几道题，关于你如何看待民主治理、冲突与互助。这是社区运作的核心。'}
+            {q.sec === '外部环境' && '最后几道题，关于外部因素——你的顾虑，和家人的态度。'}
+          </p>
+        </div>
+      )}
+
+      {/* Question */}
+      <h2 style={{ fontFamily:`'Noto Serif SC',serif`, fontSize:21, fontWeight:700, color:C.soil, margin:'0 0 7px', lineHeight:1.35 }}>{q.q}</h2>
+      {q.hint && <p style={{ fontSize:12, color:C.stone, margin:'0 0 20px', lineHeight:1.7 }}>{q.hint}</p>}
+      {isMulti && <p style={{ fontSize:11, color:C.sage, letterSpacing:'0.06em', margin:'0 0 12px' }}>可多选</p>}
+
+      {/* Options */}
+      <div style={{ display:'flex', flexDirection:'column', gap:9, marginBottom:24 }}>
+        {q.opts.map(opt => {
+          const on = isMulti ? multiSel.includes(opt) : selected === opt;
+          return (
+            <button key={opt} onClick={() => pick(opt)}
+              style={{ padding:'12px 16px', border:`1.5px solid ${on?C.moss:C.mist}`, background:on?C.parchment:C.cream, color:on?C.moss:C.bark, fontSize:13, textAlign:'left', display:'flex', alignItems:'center', gap:11, transition:'all 0.15s', lineHeight:1.5 }}
+              onMouseEnter={e=>{if(!on){e.currentTarget.style.borderColor=C.stone;e.currentTarget.style.background=C.parchment;}}}
+              onMouseLeave={e=>{if(!on){e.currentTarget.style.borderColor=C.mist;e.currentTarget.style.background=C.cream;}}}>
+              <div style={{ flexShrink:0, width:17, height:17, border:`1.5px solid ${on?C.moss:C.stone}`, borderRadius:isMulti?2:'50%', background:on?C.moss:'transparent', display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.15s' }}>
+                {on && <div style={{ width:6, height:6, background:C.cream, borderRadius:isMulti?1:'50%' }}/>}
+              </div>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Multi-choice next + back */}
+      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+        {isMulti && (
+          <button onClick={() => advance()} disabled={!multiSel.length}
+            style={{ padding:'12px 24px', background:multiSel.length?C.moss:C.mist, color:multiSel.length?C.cream:C.stone, border:'none', fontSize:13, letterSpacing:'0.03em', transition:'background 0.2s' }}>
+            {step === Qs.length - 1 ? '生成我的报告 →' : '下一题 →'}
+          </button>
+        )}
+        {step > 0 && (
+          <button onClick={() => setStep(s => s - 1)}
+            style={{ padding:'12px 14px', background:'transparent', border:'none', color:C.stone, fontSize:12 }}>
+            ← 上一题
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── APP ────────────────────────────────────────────────────────────────────
+
+function App() {
+  const [tab, setTab] = useState('assessment');
+  const [msgs, setMsgs] = useState([]);           // lifted from Advisor
+  const [confirmOpen, setConfirmOpen] = useState(false); // switch-guard modal
+
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&family=Noto+Sans+SC:wght@300;400;500&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+    return () => { try { document.head.removeChild(link); } catch {} };
+  }, []);
+
+  return (
+    <div style={{ fontFamily:`'Noto Sans SC',sans-serif`, background:C.warm, minHeight:'100vh' }}>
+      <style>{`
+        *{box-sizing:border-box} button{cursor:pointer;font-family:'Noto Sans SC',sans-serif} input{outline:none}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes blink{50%{opacity:0}} @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+        @keyframes spin{to{transform:rotate(360deg)}} @keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
+        input::placeholder{color:${C.stone}}
+      `}</style>
+
+      <div style={{ maxWidth:700, margin:'0 auto', padding:'2.5rem 1.5rem', display:'flex', flexDirection:'column', minHeight:'100vh' }}>
+
+        {/* Header */}
+        <div style={{ textAlign:'center', marginBottom:'1.8rem' }}>
+          <p style={{ fontSize:10, letterSpacing:'0.24em', color:C.stone, textTransform:'uppercase', margin:'0 0 10px' }}>田园营造社</p>
+          <h1 style={{ fontFamily:`'Noto Serif SC',serif`, fontSize:21, fontWeight:700, color:C.soil, margin:'0 0 6px' }}>
+            {tab === 'advisor' ? '山问 · AI 社区顾问' : '匹配度测评'}
+          </h1>
+          <div style={{ width:28, height:2.5, background:C.gold, margin:'12px auto 18px', borderRadius:2 }}/>
+        </div>
+
+        {/* Confirm modal — shown when leaving advisor mid-conversation */}
+        {confirmOpen && (
+          <div style={{ position:'fixed', inset:0, background:'rgba(42,31,20,0.55)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 1.5rem' }}>
+            <div style={{ background:C.warm, maxWidth:340, width:'100%', padding:'28px 26px', animation:'fadeUp 0.25s ease' }}>
+              <p style={{ fontFamily:`'Noto Serif SC',serif`, fontSize:16, fontWeight:700, color:C.soil, margin:'0 0 10px', lineHeight:1.4 }}>
+                离开对话？
+              </p>
+              <p style={{ fontSize:13, color:C.stone, lineHeight:1.9, margin:'0 0 22px' }}>
+                切换到测匹配度后，当前与山问的对话将被清空。<br/>
+                如果需要保留，可以先点「复制对话记录」再离开。
+              </p>
+              <div style={{ display:'flex', gap:8 }}>
+                <button
+                  onClick={() => { setConfirmOpen(false); setMsgs([]); setTab('assessment'); }}
+                  style={{ flex:1, padding:'11px 0', background:C.moss, color:C.cream, border:'none', fontSize:13, letterSpacing:'0.04em', transition:'background 0.2s' }}
+                  onMouseEnter={e=>e.currentTarget.style.background=C.soil}
+                  onMouseLeave={e=>e.currentTarget.style.background=C.moss}
+                >
+                  确认离开
+                </button>
+                <button
+                  onClick={() => setConfirmOpen(false)}
+                  style={{ flex:1, padding:'11px 0', background:'transparent', border:`1px solid ${C.mist}`, color:C.bark, fontSize:13, transition:'border-color 0.2s' }}
+                  onMouseEnter={e=>e.currentTarget.style.borderColor=C.stone}
+                  onMouseLeave={e=>e.currentTarget.style.borderColor=C.mist}
+                >
+                  继续对话
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div style={{ display:'flex', borderBottom:`1px solid ${C.mist}`, marginBottom:26 }}>
+          {[{id:'assessment',label:'测匹配度'},{id:'advisor',label:'问山问'}].map(t => (
+            <button key={t.id}
+              onClick={() => {
+                if (t.id === 'assessment' && tab === 'advisor' && msgs.length > 0) {
+                  setConfirmOpen(true); // guard: mid-conversation
+                } else {
+                  setTab(t.id);
+                }
+              }}
+              style={{ flex:1, padding:'11px 0', border:'none', background:'transparent', fontSize:14, color:tab===t.id?C.moss:C.stone, fontWeight:tab===t.id?500:400, borderBottom:tab===t.id?`2px solid ${C.moss}`:'2px solid transparent', marginBottom:-1, transition:'all 0.18s', letterSpacing:'0.02em' }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div style={{ flex:1, display:'flex', flexDirection:'column' }}>
+          {tab === 'advisor'
+            ? <Advisor msgs={msgs} setMsgs={setMsgs} />
+            : <Assessment onSwitchToAdvisor={() => setTab('advisor')} />
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── RENDER ─────────────────────────────────────────────────────────────────
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+<script>
+// 等 React render 完成后，隐藏 loading 屏
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const ls = document.getElementById('loading-screen');
+    if (ls) {
+      ls.classList.add('hidden');
+      setTimeout(() => ls.remove(), 400);
+    }
+  }, 100);
+});
+</script>
+</body>
+</html>
