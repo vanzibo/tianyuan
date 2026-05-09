@@ -1,0 +1,13 @@
+# Netlify 项目配置
+
+[build]
+  publish = "."
+
+[functions]
+  directory = "netlify/functions"
+
+# 自定义路由，让前端可以用 /api/chat 访问 Function
+[[redirects]]
+  from = "/api/chat"
+  to = "/.netlify/functions/chat"
+  status = 200
